@@ -1,10 +1,10 @@
 class LayerManager {
-	constructor(texture, scene) {
-		this.numberOfLayers = 16;
+	constructor(texture, scene, worldData) {
+		this.numberOfLayers = worldData.size.y;
 		this.layers = [];
 
 		for(let i = 0; i < this.numberOfLayers; i++) {
-			this.layers.push(new Layer([0, i, 0]));
+			this.layers.push(new Layer(i, worldData));
 		}
 
 		this.layerMeshes = [];

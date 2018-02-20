@@ -1,21 +1,16 @@
 class Layer {
-	constructor(position) {
-		this.position = position;
+	constructor(layerIndex, worldData) {
+		this.layerIndex = layerIndex;
 
-		this.CUBE_TYPE_AIR = 255;
 		this.CUBE_SIDE_LENGTH = 1;
 
-		this.size = {x: 25, y: 1, z: 25};
-		this.numberOfCubes = this.size.x * this.size.y * this.size.z;
+		this.layerSize = {x: worldData.size.x, y: 1, z: worldData.size.z};
+		this.numberOfCubesPerLayer = this.layerSize.x * this.layerSize.y * this.layerSize.z;
 
-		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);
-		this.cubeTypes = new Uint8Array(cubeTypeBuffer);
-		this.initializeCubeTypes();
-
-		let verticesBuffer = new ArrayBuffer(4 * 18 * 6 * this.numberOfCubes);
-		let normalsBuffer = new ArrayBuffer(4 * 18 * 6 * this.numberOfCubes);
-		let texCoordsBuffer = new ArrayBuffer(4 * 12 * 6 * this.numberOfCubes);
-		let indexBuffer = new ArrayBuffer(4 * 12 * 3 * this.numberOfCubes);
+		let verticesBuffer = new ArrayBuffer(4 * 18 * 6 * this.numberOfCubesPerLayer);
+		let normalsBuffer = new ArrayBuffer(4 * 18 * 6 * this.numberOfCubesPerLayer);
+		let texCoordsBuffer = new ArrayBuffer(4 * 12 * 6 * this.numberOfCubesPerLayer);
+		let indexBuffer = new ArrayBuffer(4 * 12 * 3 * this.numberOfCubesPerLayer);
 
 		this.verticesArray = new Float32Array(verticesBuffer);
 		this.normalsArray = new Float32Array(normalsBuffer);
@@ -24,42 +19,30 @@ class Layer {
 
 		this.verticesCount = 0;
 
-		this.inizializeVertexBufferObjects();
+		this.inizializeVertexBufferObjects(worldData);
 	}
 
-	initializeCubeTypes() {
-		let cubeIndex = 0;
-		for(let x = 0; x < this.size.x; x++) {
-			for(let y = 0; y < this.size.y; y++) {
-				for(let z = 0; z < this.size.z; z++) {
-					this.cubeTypes[cubeIndex] = Math.floor(Math.random() * 5) - 1;
-					cubeIndex++;					
-				}
-			}
-		}
-	}
-
-	inizializeVertexBufferObjects() {
+	inizializeVertexBufferObjects(worldData) {
 		let cube = new Cube(this.CUBE_SIDE_LENGTH);
 		let arrayIndex = 0;
 		let triangleIndex = 0;
-		for(let x = 0; x < this.size.x; x++) {
-			for(let y = 0; y < this.size.y; y++) {
-				for(let z = 0; z < this.size.z; z++) {
-					let index = this.getIndexFromCoordinates([x,y,z]);
+		for(let x = 0; x < this.layerSize.x; x++) {
+			for(let y = this.layerIndex; y < this.layerIndex + this.layerSize.y; y++) {
+				for(let z = 0; z < this.layerSize.z; z++) {
+					let index = worldData.getIndexFromCoordinates([x,y,z]);
 
-					// If cubeType !== this.CUBE_TYPE_AIR, check if cube is visible
-					if(this.cubeTypes[index] !== this.CUBE_TYPE_AIR) {
+					// If cubeType !== worldData.CUBE_TYPE_AIR, check if cube is visible
+					if(worldData.cubeTypes[index] !== worldData.CUBE_TYPE_AIR) {
 
 						// Get the types of the 6 neighbor-cubes
-						let neighborsTypes = this.getNeighborsTypes([x, y, z]);
+						let neighborsTypes = worldData.getNeighborsTypes([x, y, z]);
  
 						// Go through array neighborsTypes and check, if individual neighbor cube is solid
 						let faceIsVisibleArray = new Array(6);
 						let numberOfVisibleFaces = 0;
 						for(let i = 0; i < 6; i++) {
-							// Check if cubeType of neighbor !== this.CUBE_TYPE_AIR
-							if(neighborsTypes[i] !== this.CUBE_TYPE_AIR) {
+							// Check if cubeType of neighbor !== worldData.CUBE_TYPE_AIR
+							if(neighborsTypes[i] !== worldData.CUBE_TYPE_AIR) {
 								faceIsVisibleArray[i] = false;
 							} else {
 								faceIsVisibleArray[i] = true;
@@ -67,10 +50,10 @@ class Layer {
 							}
 						}
 
-						cube.setPosition([x + this.position[0] - this.size.x / 2,
-										  y + this.position[1] - this.size.y / 2,
-										  z + this.position[2] - this.size.z / 2]);
-						cube.setTexOffset([this.cubeTypes[index], 0]);
+						cube.setPosition([x - this.layerSize.x / 2,
+										  y - this.layerSize.y / 2,
+										  z - this.layerSize.z / 2]);
+						cube.setTexOffset([worldData.cubeTypes[index], 0]);
 
 						cube.setFaceVisibility(faceIsVisibleArray);
 
@@ -92,57 +75,6 @@ class Layer {
 				}
 			}
 		}
-
 		this.verticesCount = arrayIndex * 6;
-	}
-
-	getNeighborsTypes(coords) {
-		let neighborsTypes = [];
-		let x = coords[0];
-		let y = coords[1];
-		let z = coords[2];
-
-		if( x >= 0 && x <= this.size.x && 
-			y >= 0 && y <= this.size.y &&
-			z >= 0 && z <= this.size.z) {
-
-			if(x - 1 >= 0)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x - 1, y, z])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
-
-			if(z + 1 < this.size.z)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x, y, z + 1])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
-
-			if(x + 1 < this.size.x)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x + 1, y, z])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
-
-			if(z - 1 >= 0)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x, y, z - 1])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
- 
-			if(y + 1 < this.size.y)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x, y + 1, z])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
-
-			if(y - 1 >= 0)
-				neighborsTypes.push(this.cubeTypes[this.getIndexFromCoordinates([x, y - 1, z])]);
-			else
-				neighborsTypes.push(this.CUBE_TYPE_AIR);
-
-		}
-
-		return neighborsTypes;
-	}
-
-	getIndexFromCoordinates(coords) {
-		return coords[0] * (this.size.y * this.size.z) + coords[1] * this.size.z + coords[2];
-
 	}
 }
