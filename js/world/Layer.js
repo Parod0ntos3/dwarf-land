@@ -1,11 +1,11 @@
-class Chunk {
+class Layer {
 	constructor(position) {
 		this.position = position;
 
 		this.CUBE_TYPE_AIR = 255;
 		this.CUBE_SIDE_LENGTH = 1;
 
-		this.size = {x: 25, y: 3, z: 25};
+		this.size = {x: 25, y: 1, z: 25};
 		this.numberOfCubes = this.size.x * this.size.y * this.size.z;
 
 		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);
@@ -67,9 +67,9 @@ class Chunk {
 							}
 						}
 
-						cube.setPosition([x + this.position[0] / 2 - this.size.x / 2,
-										  y + this.position[0] / 2 - this.size.y / 2,
-										  z + this.position[0] / 2 - this.size.z / 2]);
+						cube.setPosition([x + this.position[0] - this.size.x / 2,
+										  y + this.position[1] - this.size.y / 2,
+										  z + this.position[2] - this.size.z / 2]);
 						cube.setTexOffset([this.cubeTypes[index], 0]);
 
 						cube.setFaceVisibility(faceIsVisibleArray);
