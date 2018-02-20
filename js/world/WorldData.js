@@ -3,7 +3,7 @@ class WorldData {
 
 		this.CUBE_TYPE_AIR = 255;
 
-		this.size = {x: 25, y: 25, z: 25};
+		this.size = {x: 25, y: 3, z: 25};
 		this.numberOfCubes = this.size.x * this.size.y * this.size.z;
 
 		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);

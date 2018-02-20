@@ -11,54 +11,51 @@ class Cube {
 		this.cubeIsVisible = true;
 		this.faceIsVisibleArray = [true, true, true, true, true, true];
 
+		this.indices = [
+			[0, 1, 2, 0, 3, 1],
+			[0, 1, 2, 1, 3, 2],
+			[0, 1, 2, 1, 0, 3],
+			[0, 1, 2, 0, 3, 1],
+			[0, 1, 2, 0, 2, 3],
+			[0, 1, 2, 0, 3, 1]
+		];
+
 		this.faceVertices = [
 			[
-				-this.size,-this.size,-this.size,	// -x face, upper triangle
+				-this.size,-this.size,-this.size,	// -x face
 				-this.size, this.size, this.size,
 				-this.size, this.size,-this.size,
-				-this.size,-this.size,-this.size,	// -x face, lower triangle
 				-this.size,-this.size, this.size,
-				-this.size, this.size, this.size,
 			],
 			[
-				 this.size, this.size, this.size,	// +z face, upper triangle
+				 this.size, this.size, this.size,	// +z face
  				-this.size, this.size, this.size,
 				 this.size,-this.size, this.size,
-				-this.size, this.size, this.size,	// +z face, lower triangle
 				-this.size,-this.size, this.size,
+			],
+			[
+				 this.size, this.size, this.size, 	// +x face
+				 this.size,-this.size,-this.size,
+				 this.size, this.size,-this.size,
 				 this.size,-this.size, this.size,
 			],
 			[
-				 this.size, this.size, this.size, 	// +x face, upper triangle
-				 this.size,-this.size,-this.size,
-				 this.size, this.size,-this.size,
-				 this.size,-this.size,-this.size,	// +x face, lower triangle
-				 this.size, this.size, this.size,
-				 this.size,-this.size, this.size,
-			],
-			[
-				 this.size, this.size,-this.size,	// -z face, upper triangle
+				 this.size, this.size,-this.size,	// -z face
 				-this.size,-this.size,-this.size,
 				-this.size, this.size,-this.size,
-				 this.size, this.size,-this.size,	// -z face, lower triangle
 				 this.size,-this.size,-this.size,
-				-this.size,-this.size,-this.size,
 			],
 			[
-				 this.size, this.size, this.size,	// +y face, front triangle
+				 this.size, this.size, this.size,	// +y face
 				 this.size, this.size,-this.size,
-				-this.size, this.size,-this.size,
-				 this.size, this.size, this.size, 	// +y face, back triangle
 				-this.size, this.size,-this.size,
 				-this.size, this.size, this.size,
 			],
 			[
-				 this.size,-this.size, this.size,	// -y face, front triangle
+				 this.size,-this.size, this.size,	// -y face
 				-this.size,-this.size,-this.size,
 				 this.size,-this.size,-this.size,
-				 this.size,-this.size, this.size,	// -y face, back triangle
 				-this.size,-this.size, this.size,
-				-this.size,-this.size,-this.size,
 			],
 		];
 
@@ -76,39 +73,29 @@ class Cube {
 				0, 1,
 				1, 0,
 				0, 0,
-				0, 1,
 				1, 1,
-				1, 0
 			],
 			[
 				1, 0,
 				0, 0,
 				1, 1,
-				0, 0,
-				0, 1,
-				1, 1
-			],
-			[
-				0, 0,
-				1, 1,
-				1, 0,
-				1, 1,
-				0, 0,
 				0, 1
 			],
 			[
 				0, 0,
 				1, 1,
 				1, 0,
+				0, 1
+			],
+			[
 				0, 0,
-				0, 1,
-				1, 1
+				1, 1,
+				1, 0,
+				0, 1
 			],
 			[
 				1, 1,
 				1, 0,
-				0, 0,
-				1, 1,
 				0, 0,
 				0, 1
 			],
@@ -116,11 +103,28 @@ class Cube {
 				1, 1,
 				0, 0,
 				1, 0,
-				1, 1,
-				0, 1,
-				0, 0
+				0, 1
 			],
 		];
+	}
+
+	getIndices() {
+		let indices = [];
+		if(false === this.cubeIsVisible){
+			return indices;
+		}
+
+		let indexCounter = 0;
+		for(let i = 0; i < 6; i++) {
+			if(this.faceIsVisibleArray[i]) {
+				for(let j = 0; j < 6; j++) {
+					indices.push(this.indices[i][j] + indexCounter);
+				}
+				indexCounter += 4;
+			}
+		}
+
+		return indices;		
 	}
 
 	getGeometry() {
@@ -131,7 +135,7 @@ class Cube {
 
 		for(let i = 0; i < 6; i++) {
 			if(this.faceIsVisibleArray[i]) {
-				for(let j = 0; j < 18; j++) {
+				for(let j = 0; j < 12; j++) {
 					vertices.push(this.faceVertices[i][j] + this.position[j % 3]);
 				}
 			}
@@ -148,7 +152,7 @@ class Cube {
 
 		for(let i = 0; i < 6; i++) {
 			if(this.faceIsVisibleArray[i]) {
-				for(let j = 0; j < 6; j++) {
+				for(let j = 0; j < 4; j++) {
 					normals = normals.concat(this.normals[i]);
 				}
 			}
@@ -165,7 +169,7 @@ class Cube {
 
 		for(let i = 0; i < 6; i++) {
 			if(this.faceIsVisibleArray[i]) {
-				for(let j = 0; j < 12; j++) {
+				for(let j = 0; j < 8; j++) {
 					if(this.texCoords[i][j] == 0)
 						texCoords.push(this.texSize * (this.texOffset[j % 2] + this.texCoords[i][j]) + this.texDiff);
 					else

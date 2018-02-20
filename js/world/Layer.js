@@ -25,7 +25,7 @@ class Layer {
 	inizializeVertexBufferObjects(worldData) {
 		let cube = new Cube(this.CUBE_SIDE_LENGTH);
 		let arrayIndex = 0;
-		let triangleIndex = 0;
+		let indexCounter = 0;
 		for(let x = 0; x < this.layerSize.x; x++) {
 			for(let y = this.layerIndex; y < this.layerIndex + this.layerSize.y; y++) {
 				for(let z = 0; z < this.layerSize.z; z++) {
@@ -57,17 +57,15 @@ class Layer {
 
 						cube.setFaceVisibility(faceIsVisibleArray);
 
-						this.verticesArray.set(cube.getGeometry(), arrayIndex * 18);
-						this.normalsArray.set(cube.getNormals(), arrayIndex * 18);
-						this.texCoordsArray.set(cube.getTexCoords(), arrayIndex * 12);
+						this.verticesArray.set(cube.getGeometry(), arrayIndex * 12);
+						this.normalsArray.set(cube.getNormals(), arrayIndex * 12);
+						this.texCoordsArray.set(cube.getTexCoords(), arrayIndex * 8);
 
-						let indices = [];
-						for(let i = 0; i < numberOfVisibleFaces * 2; i++) {
-							for(let j = 0; j < 3; j++) {
-								indices.push(triangleIndex);
-								triangleIndex++;
-							}
+						let indices = cube.getIndices();
+						for(let i = 0; i < indices.length; i++) {
+							indices[i] += indexCounter;
 						}
+						indexCounter += (indices.length / 6) * 4;
 						this.indexArray.set(new Float32Array(indices), arrayIndex * 6);
 
 						arrayIndex += numberOfVisibleFaces;
