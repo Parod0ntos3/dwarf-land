@@ -21,7 +21,6 @@ class LayerManager {
 			layerGeometry.drawRange = { start: 0, count: currentLayer.verticesCount }
 
 			var layerMesh = new THREE.Mesh(layerGeometry, layerMaterial);
-
 			this.layerMeshes.push(layerMesh);
 		}
 

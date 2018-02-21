@@ -1,9 +1,9 @@
-class WorldData {
+class ChunkData {
 	constructor() {
 
 		this.CUBE_TYPE_AIR = 255;
 
-		this.size = {x: 128, y: 64, z: 128};
+		this.size = {x: 16, y: 64, z: 16};
 		this.numberOfCubes = this.size.x * this.size.y * this.size.z;
 
 		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);
