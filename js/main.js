@@ -31,8 +31,7 @@ var animate = function () {
 	renderer.render(scene, camera);
 };
 
-//var worldData = new WorldData();
-var chunkData = new ChunkData();
+var worldData = new WorldData();
 
 // Load the texture asynchronously
 var textureLoader = new THREE.TextureLoader();
@@ -40,8 +39,7 @@ textureLoader.load('./res/cubes.png', function (texture){
 	console.log('texture loaded');
 	texture.flipY = false;
 
-	//var layerManager = new LayerManager(texture, scene, worldData);
-	var chunkManager = new ChunkManager(texture, scene, chunkData);
+	var chunkManager = new ChunkManager(texture, scene, worldData);
 
 
 	animate();
