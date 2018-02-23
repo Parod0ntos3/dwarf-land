@@ -14,7 +14,12 @@ class Chunk {
 
 		this.verticesCount = 0;
 
-		this.inizializeVertexBufferObjects(worldData, chunkStartCoords);		
+		this.inizializeVertexBufferObjects(worldData, chunkStartCoords);
+
+		this.verticesArray = this.verticesArray.subarray(0, this.verticesCount * 3 * 2 / 3);
+		this.normalsArray = this.normalsArray.subarray(0, this.verticesCount * 3 * 2 / 3);
+		this.texCoordsArray = this.texCoordsArray.subarray(0, this.verticesCount * 2 * 2 / 3);
+		this.indexArray = this.indexArray.subarray(0, this.verticesCount);
 	}
 
 	inizializeVertexBufferObjects(worldData, chunkStartCoords) {
@@ -37,7 +42,8 @@ class Chunk {
 						let numberOfVisibleFaces = 0;
 						for(let i = 0; i < 6; i++) {
 							// Check if cubeType of neighbor !== worldData.CUBE_TYPE_AIR
-							if(neighborsTypes[i] !== worldData.CUBE_TYPE_AIR) {
+							if(neighborsTypes[i] !== worldData.CUBE_TYPE_AIR ||
+							   neighborsTypes[i] === worldData.CUBE_TYPE_OUTSIDE_WORLD) {
 								faceIsVisibleArray[i] = false;
 							} else {
 								faceIsVisibleArray[i] = true;

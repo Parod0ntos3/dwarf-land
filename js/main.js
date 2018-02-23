@@ -2,7 +2,7 @@ var renderer = new THREE.WebGLRenderer({canvas: document.getElementById("myCanva
 										antialias: true} );
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setClearColor("rgb(255, 0, 0)");
+renderer.setClearColor("rgb(100, 100, 150)");
 document.body.appendChild( renderer.domElement );
 
 var scene = new THREE.Scene();
@@ -16,11 +16,6 @@ var directionalLight = new THREE.DirectionalLight("rgb(255, 255, 255)", 0.8);
 directionalLight.position.set( 1, 1.75, 1 );
 directionalLight.position.multiplyScalar( 30 );
 scene.add(directionalLight);
-
-var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-var material = new THREE.MeshLambertMaterial({color: "rgb(100, 255, 200)"});
-var cube = new THREE.Mesh( geometry, material );
-//scene.add( cube );
 
 camera.position.z = 5;
 
