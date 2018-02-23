@@ -2,7 +2,7 @@ var renderer = new THREE.WebGLRenderer({canvas: document.getElementById("myCanva
 										antialias: true} );
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setClearColor("rgb(100, 100, 150)");
+renderer.setClearColor("rgb(150, 150, 175)");
 document.body.appendChild( renderer.domElement );
 
 var scene = new THREE.Scene();
@@ -28,6 +28,16 @@ var animate = function () {
 
 var worldData = new WorldData();
 
+var worldSideLength = worldData.chunkSize.x * worldData.numberOfChunks.x;
+var planeMaterial = new THREE.MeshBasicMaterial( {color: "rgb(100,100,150)", side: THREE.DoubleSide} );
+var planeGeometry = new THREE.PlaneGeometry( worldSideLength, worldSideLength, 1 );
+var planeMesh = new THREE.Mesh( planeGeometry, planeMaterial );
+planeMesh.position.x = 0;
+planeMesh.position.y = 7.5;
+planeMesh.position.z = 0;
+planeMesh.rotation.x = THREE.Math.degToRad(90);
+scene.add(planeMesh);
+
 // Load the texture asynchronously
 var textureLoader = new THREE.TextureLoader();
 textureLoader.load('./res/cubes.png', function (texture){
@@ -35,7 +45,6 @@ textureLoader.load('./res/cubes.png', function (texture){
 	texture.flipY = false;
 
 	var chunkManager = new ChunkManager(texture, scene, worldData);
-
 
 	animate();
 }, undefined, function (err) {

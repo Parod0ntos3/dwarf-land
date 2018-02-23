@@ -52,7 +52,7 @@ class Chunk {
 						}
 
 						cube.setPosition([x - worldData.worldSize.x / 2,
-										  y - worldData.worldSize.y / 2,
+										  y + this.CUBE_SIDE_LENGTH / 2,
 										  z - worldData.worldSize.z / 2]);
 
 						cube.setTexOffset([cubeType, 0]);

@@ -1,7 +1,10 @@
 class WorldData {
 	constructor() {
 		this.CUBE_TYPE_AIR = 254;
+		this.CUBE_TYPE_WATER = this.CUBE_TYPE_AIR;
 		this.CUBE_TYPE_OUTSIDE_WORLD = 255;
+
+		this.WATER_SURFACE_HEIGHT = 8;
 
 		this.simplex = new SimplexNoise();
 
@@ -25,44 +28,52 @@ class WorldData {
 		let cubeIndex = 0;
 		for(let x = 0; x < this.chunkSize.x * this.numberOfChunks.x; x++) {
 			for(let z = 0; z < this.chunkSize.z * this.numberOfChunks.z; z++) {
-				//let height = (this.simplex.noise(x / 64, z / 64) + 1) * 16 + 32;
+				let height = this.getHeightFromSimplex(x, z);
 				for(let y = 0; y < this.chunkSize.y; y++) {
-					let noise = this.getNoiseValue(x,y,z);
-					//if(y <= height)
-					if(noise > 0.75 * (1/ 184))
-						this.cubeTypes[cubeIndex] = Math.floor(Math.random() * 5);
-					else
+					if(y <= height - 2) {
+						this.cubeTypes[cubeIndex] = 0;
+					} else if(y <= height && y <= this.WATER_SURFACE_HEIGHT) {
+						this.cubeTypes[cubeIndex] = 2;
+					} else if(y <= height && y > this.WATER_SURFACE_HEIGHT) {
+						this.cubeTypes[cubeIndex] = 1;
+					} else if(y > height && y <= this.WATER_SURFACE_HEIGHT) {
+						this.cubeTypes[cubeIndex] = this.CUBE_TYPE_WATER;						
+					} else {
 						this.cubeTypes[cubeIndex] = this.CUBE_TYPE_AIR;
+					}
 					cubeIndex++;
 				}
 			}
 		}
 	}
 
-	getNoiseValue(x, y, z) {
+	getHeightFromSimplex(x, z) {
+		let maxDistance = (this.chunkSize.x * this.numberOfChunks.x * 0.5 * Math.sqrt(2));
+		let normFactor = this.chunkSize.y / maxDistance * 0.75;
 		let x_dist = x - (this.chunkSize.x * this.numberOfChunks.x) / 2;
-		let y_dist = y - (this.chunkSize.y * 1) / 2;
 		let z_dist = z - (this.chunkSize.z * this.numberOfChunks.z) / 2;
 
-		if(x_dist === 0)
-			x_dist = 1;
-		if(y_dist === 0)
-			y_dist = 1;
-		if(z_dist === 0)
-			z_dist = 1;
+		let distanceFromCenter = Math.sqrt(x_dist * x_dist + z_dist * z_dist);
+		if(distanceFromCenter === 0)
+			distanceFromCenter = 1;
+		distanceFromCenter *= 2;
 
-		let distanceFromCenter = Math.sqrt(x_dist * x_dist + y_dist * y_dist + z_dist * z_dist);
-		//console.log(x + " " + y + " " + z + " " + distanceFromCenter);
+		// Height in interval [0; ??]
+		let heightFromDistanceFromCenter = (maxDistance - distanceFromCenter) * normFactor;
 
 		let noise = 0;
-
 		for(let i = 5; i <= 8; i++) {
 			let waveLength = i * 8;
-			noise += this.simplex.noise3d(x / waveLength, y / waveLength, z / waveLength);
+			noise += this.simplex.noise(x / waveLength, z / waveLength);
 		}
+		// Scale noise from [-1; 1] to [0; 18]
+		noise += 1;
+		noise *= 8;
 
-		noise *= (1 / distanceFromCenter);
-		return noise;
+		// Add noise to heightFromDistanceFromCenter
+		let height = heightFromDistanceFromCenter + noise;
+
+		return height;
 	}
 
 	getCubeType(coords) {
