@@ -18,15 +18,6 @@ controls.target.x = 128;
 controls.target.y = 32;
 controls.target.z = 128;
 
-// Initialize mouse
-var mouse = new THREE.Vector2(), INTERSECTED;
-document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-function onDocumentMouseMove( event ) {
-	event.preventDefault();
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-}
-
 // Initialize variables for fps-stats
 var stats;
 var container = document.body;
@@ -84,8 +75,11 @@ textureLoader.load('./res/cubes.png', function (texture){
 // Initialize cube which shows the selected cube
 var selechtedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
 var selechtedCubeMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-var selectedCube = new THREE.Mesh( selechtedCubeGeometry, selechtedCubeMaterial );
-scene.add( selectedCube );
+var selectedCubeMesh = new THREE.Mesh( selechtedCubeGeometry, selechtedCubeMaterial );
+scene.add( selectedCubeMesh );
+
+// Initialize a dwarf
+var dwarf = new Dwarf(scene, worldData);
 
 // Main game loop
 var main = function () {
@@ -99,13 +93,21 @@ var main = function () {
 		stats.begin();
 
 		controls.update();
-		raycaster.setFromCamera( mouse, camera );
+		raycaster.setFromCamera( mouse.position, camera );
 		
 		let mouseIntersectionCoords = worldData.getIntersectionWithMouseRay(raycaster.ray);
 
-		selectedCube.position.x = mouseIntersectionCoords[0];
-		selectedCube.position.y = mouseIntersectionCoords[1];
-		selectedCube.position.z = mouseIntersectionCoords[2];
+		if(mouseIntersectionCoords != null) {
+			selectedCubeMesh.position.x = mouseIntersectionCoords[0];
+			selectedCubeMesh.position.y = mouseIntersectionCoords[1];
+			selectedCubeMesh.position.z = mouseIntersectionCoords[2];
+		} else {
+			selectedCubeMesh.position.x = 100000;
+			selectedCubeMesh.position.y = 100000;
+			selectedCubeMesh.position.z = 100000;			
+		}
+
+		dwarf.update(mouseIntersectionCoords);
 
 		renderer.render(scene, camera);
 		stats.end();

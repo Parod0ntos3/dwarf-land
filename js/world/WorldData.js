@@ -8,7 +8,6 @@ class WorldData {
 
 		this.simplex = new SimplexNoise();
 
-
 		this.chunkSize = {x: 16, y: 96, z: 16};
 		this.numberOfChunks = {x: 16, z: 16};
 		this.worldSize = {x: this.chunkSize.x * this.numberOfChunks.x,
@@ -99,6 +98,14 @@ class WorldData {
 
 	getCubeType(coords) {
 		return this.cubeTypes[this.getIndexFromCoordinates(coords)];
+	}
+
+	getHeight(x, z) {
+		for(let y = 0; y < this.chunkSize.y; y++) {
+			if(this.getCubeType([x,y,z]) === this.CUBE_TYPE_AIR) {
+				return y;
+			}
+		}
 	}
 
 	getNeighborsTypes(coords) {
@@ -250,6 +257,11 @@ class WorldData {
 			}
 		}
 
-		return selectedCubeCoordinates;
+		// Check if coordinates are inside [min, max] interval, if not set air type
+		if(	selectedCubeType != this.CUBE_TYPE_AIR) {
+			return selectedCubeCoordinates;
+		} else {
+			return null;
+		}
 	}
 }
