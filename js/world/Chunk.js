@@ -55,7 +55,7 @@ class Chunk {
 				}
 			}
 		}
-		return numberOfVisibleFaces;	
+		return numberOfVisibleFaces;
 	}
 
 	inizializeVertexBufferObjects(worldData, chunkStartCoords) {

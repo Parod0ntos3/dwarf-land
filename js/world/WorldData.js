@@ -10,7 +10,7 @@ class WorldData {
 
 
 		this.chunkSize = {x: 16, y: 96, z: 16};
-		this.numberOfChunks = {x: 4, z: 4};
+		this.numberOfChunks = {x: 16, z: 16};
 		this.worldSize = {x: this.chunkSize.x * this.numberOfChunks.x,
 						  y: this.chunkSize.y,
 						  z: this.chunkSize.z * this.numberOfChunks.z};
@@ -107,9 +107,9 @@ class WorldData {
 		let y = coords[1];
 		let z = coords[2];
 
-		if( x >= 0 && x <= this.worldSize.x && 
-			y >= 0 && y <= this.worldSize.y &&
-			z >= 0 && z <= this.worldSize.z) {
+		if( x >= 0 && x < this.worldSize.x && 
+			y >= 1 && y < this.worldSize.y &&	// Layer y = 0 should not be rendered -> Plane instead of cubes!
+			z >= 0 && z < this.worldSize.z) {
 
 			if(x - 1 >= 0)
 				neighborsTypes.push(this.getCubeType([x - 1, y, z]));
