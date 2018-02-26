@@ -10,7 +10,7 @@ class WorldData {
 
 
 		this.chunkSize = {x: 16, y: 96, z: 16};
-		this.numberOfChunks = {x: 16, z: 16};
+		this.numberOfChunks = {x: 4, z: 4};
 		this.worldSize = {x: this.chunkSize.x * this.numberOfChunks.x,
 						  y: this.chunkSize.y,
 						  z: this.chunkSize.z * this.numberOfChunks.z};
@@ -162,17 +162,18 @@ class WorldData {
 		let cameraPosition = [ray.origin.x, ray.origin.y, ray.origin.z];
 
 		// Calculate cameraCoords
-		let cameraCoords = [
-			Math.floor(cameraPosition[0]),
-			Math.floor(cameraPosition[1]),
-			Math.floor(cameraPosition[2])
-		];
+		this.cubeSideLength = 1;
+		let halfCubeSideLength = this.cubeSideLength / 2;
+		let cameraCoords = new Array(3);
+		cameraCoords[0] = Math.floor((cameraPosition[0] + halfCubeSideLength) / this.cubeSideLength);
+		cameraCoords[1] = Math.floor((cameraPosition[1] + halfCubeSideLength) / this.cubeSideLength);
+		cameraCoords[2] = Math.floor((cameraPosition[2] + halfCubeSideLength) / this.cubeSideLength);
 
 		// Get nearest x, y, z planes:
 		let nearest = new Array(3);
-		nearest[0] = cameraCoords[0]; //+ (Math.sign(mouseRay[0]) + 1) / 2;
-		nearest[1] = cameraCoords[1];// + (Math.sign(mouseRay[1]) + 1) / 2;
-		nearest[2] = cameraCoords[2];// + (Math.sign(mouseRay[2]) + 1) / 2;
+		nearest[0] = cameraCoords[0] + Math.sign(mouseRay[0]) * halfCubeSideLength;
+		nearest[1] = cameraCoords[1] + Math.sign(mouseRay[1]) * halfCubeSideLength;
+		nearest[2] = cameraCoords[2] + Math.sign(mouseRay[2]) * halfCubeSideLength;
 
 		// Get lambdas from ray-plane intersection:
 		let HIGH_LAMBDA_VALUE = 10000;
@@ -208,17 +209,17 @@ class WorldData {
 
 		while(lambdaMinValue < MAXIMUM_PICKING_RANGE) {
 			// Calculate the coordinates of the cube, with which the current ray intersects
-			selectedCubeCoordinates[lambdaMinIndex] = nearest[lambdaMinIndex];
-
+			selectedCubeCoordinates[lambdaMinIndex] = (nearest[lambdaMinIndex] + Math.sign(mouseRay[lambdaMinIndex]) * halfCubeSideLength) / this.cubeSideLength;
+			//console.log(selectedCubeCoordinates[lambdaMinIndex]);
 			if(lambdaMinIndex === 0) {
-				selectedCubeCoordinates[1] = Math.floor(cameraPosition[1] + lambdaMinValue * mouseRay[1]);
-				selectedCubeCoordinates[2] = Math.floor(cameraPosition[2] + lambdaMinValue * mouseRay[2]);
+				selectedCubeCoordinates[1] = Math.floor((cameraPosition[1] + lambdaMinValue * mouseRay[1] + halfCubeSideLength) / this.cubeSideLength);
+				selectedCubeCoordinates[2] = Math.floor((cameraPosition[2] + lambdaMinValue * mouseRay[2] + halfCubeSideLength) / this.cubeSideLength);
 			} else if(lambdaMinIndex === 1) {
-				selectedCubeCoordinates[0] = Math.floor(cameraPosition[0] + lambdaMinValue * mouseRay[0]);
-				selectedCubeCoordinates[2] = Math.floor(cameraPosition[2] + lambdaMinValue * mouseRay[2]);
+				selectedCubeCoordinates[0] = Math.floor((cameraPosition[0] + lambdaMinValue * mouseRay[0] + halfCubeSideLength) / this.cubeSideLength);
+				selectedCubeCoordinates[2] = Math.floor((cameraPosition[2] + lambdaMinValue * mouseRay[2] + halfCubeSideLength) / this.cubeSideLength);
 			} else if(lambdaMinIndex === 2) {
-				selectedCubeCoordinates[0] = Math.floor(cameraPosition[0] + lambdaMinValue * mouseRay[0]);
-				selectedCubeCoordinates[1] = Math.floor(cameraPosition[1] + lambdaMinValue * mouseRay[1]);
+				selectedCubeCoordinates[0] = Math.floor((cameraPosition[0] + lambdaMinValue * mouseRay[0] + halfCubeSideLength) / this.cubeSideLength);
+				selectedCubeCoordinates[1] = Math.floor((cameraPosition[1] + lambdaMinValue * mouseRay[1] + halfCubeSideLength) / this.cubeSideLength);
 			}
 
 			// Check if coordinates are inside [min, max] interval, if not set air type

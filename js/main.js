@@ -25,8 +25,12 @@ directionalLight.position.set( 1, 1.75, 1 );
 directionalLight.position.multiplyScalar( 30 );
 scene.add(directionalLight);
 
+camera.position.x = 0;
+camera.position.y = 0;
 camera.position.z = 5;
-
+controls.target.x = 32;
+controls.target.y = 32;
+controls.target.z = 32;
 
 var geometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
 var material = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
@@ -46,11 +50,12 @@ var animate = function () {
 
 		controls.update();
 		raycaster.setFromCamera( mouse, camera );
-		/*let mouseIntersectionCoords = worldData.getIntersectionWithMouseRay(raycaster.ray);
+		
+		let mouseIntersectionCoords = worldData.getIntersectionWithMouseRay(raycaster.ray);
 
-		cube.position.x = mouseIntersectionCoords[0] + 0.5;
-		cube.position.y = mouseIntersectionCoords[1] + 0.5;
-		cube.position.z = mouseIntersectionCoords[2] + 0.5;*/
+		cube.position.x = mouseIntersectionCoords[0];
+		cube.position.y = mouseIntersectionCoords[1];
+		cube.position.z = mouseIntersectionCoords[2];
 
 		renderer.render(scene, camera);
 		stats.end();

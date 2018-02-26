@@ -87,9 +87,7 @@ class Chunk {
 							}
 						}
 
-						cube.setPosition([x + this.CUBE_SIDE_LENGTH / 2,
-										  y + this.CUBE_SIDE_LENGTH / 2,
-										  z + this.CUBE_SIDE_LENGTH / 2]);
+						cube.setPosition([x,y,z]);
 
 						cube.setTexOffset([cubeType, 0]);
 
