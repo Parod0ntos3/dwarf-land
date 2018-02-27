@@ -73,6 +73,7 @@ textureLoader.load('./res/cubes.png', function (texture){
 
 // Initialize mousePicker
 var mousePicker = new MousePicker(scene, camera, worldData);
+var pathfinder = new Pathfinder(worldData);
 
 // Initialize a dwarf
 var entityManager = new EntityManager(scene, worldData);

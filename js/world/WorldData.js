@@ -28,7 +28,6 @@ class WorldData {
 		let cubeWalkabilitiesBuffer = new ArrayBuffer(this.numberOfCubes);
 		this.cubeWalkabilities = new Uint8Array(cubeWalkabilitiesBuffer);
 		this.initializeCubeWalkabilities();
-
 	}
 
 	initializeCubeTypes() {
@@ -77,8 +76,8 @@ class WorldData {
 			for(let z = 0; z < this.worldSize.z; z++) {
 				for(let y = 0; y < this.worldSize.y - 2; y++) {
 					if( this.cubeSolidities[cubeIndex] === 1 &&
-						this.cubeSolidities[this.getIndexFromCoordinates(x, y + 1, z)] === 1 &&
-						this.cubeSolidities[this.getIndexFromCoordinates(x, y + 2, z)] === 1 ) {
+						this.cubeSolidities[this.getIndexFromCoordinates([x, y + 1, z])] === 0 &&
+						this.cubeSolidities[this.getIndexFromCoordinates([x, y + 2, z])] === 0 ) {
 						this.cubeWalkabilities[cubeIndex] = 1;
 					} else {
 						this.cubeWalkabilities[cubeIndex] = 0;
@@ -87,7 +86,7 @@ class WorldData {
 				}
 
 				if( this.cubeSolidities[cubeIndex] === 1 &&
-					this.cubeSolidities[this.getIndexFromCoordinates(x, y + 1, z)] === 1 ) {
+					this.cubeSolidities[this.getIndexFromCoordinates([x, y + 1, z])] === 0 ) {
 					this.cubeWalkabilities[cubeIndex] = 1;
 				} else {
 					this.cubeWalkabilities[cubeIndex] = 0;
@@ -101,7 +100,7 @@ class WorldData {
 				}
 				cubeIndex++;			
 			}
-		}		
+		}
 	}
 
 	getHeightFromSimplex(x, z) {
@@ -158,6 +157,14 @@ class WorldData {
 		return this.cubeTypes[this.getIndexFromCoordinates(coords)];
 	}
 
+	getCubeWalkability(coords) {
+		return this.cubeWalkabilities[this.getIndexFromCoordinates(coords)];
+	}
+
+	setCubeWalkability(coords, walkability) {
+		this.cubeWalkabilities[this.getIndexFromCoordinates(coords)] = walkability;
+	}
+
 	getHeight(x, z) {
 		for(let y = 0; y < this.chunkSize.y; y++) {
 			if(this.getCubeType([x,y,z]) === this.CUBE_TYPE_AIR) {
@@ -205,7 +212,7 @@ class WorldData {
 				neighborsTypes.push(this.getCubeType([x, y - 1, z]));
 			else
 				neighborsTypes.push(this.CUBE_TYPE_OUTSIDE_WORLD);
-
+			
 		}
 
 		return neighborsTypes;

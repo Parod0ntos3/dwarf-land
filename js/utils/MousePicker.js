@@ -24,6 +24,9 @@ class MousePicker {
 			this.selectedCubeMesh.position.x = this.selectedCubeCoords[0];
 			this.selectedCubeMesh.position.y = this.selectedCubeCoords[1];
 			this.selectedCubeMesh.position.z = this.selectedCubeCoords[2];
+
+			if(mouse.leftClicked === true)
+				console.log(this.selectedCubeCoords);
 		}
 	}
 
