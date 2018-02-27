@@ -13,7 +13,6 @@ class WorldData {
 		this.worldSize = {x: this.chunkSize.x * this.numberOfChunks.x,
 						  y: this.chunkSize.y,
 						  z: this.chunkSize.z * this.numberOfChunks.z};
-		this.cubeTypes = [];
 
 		this.numberOfCubesPerChunk = this.chunkSize.x * this.chunkSize.y * this.chunkSize.z;
 		this.numberOfCubes = this.numberOfCubesPerChunk * this.numberOfChunks.x * this.numberOfChunks.z;
@@ -21,14 +20,21 @@ class WorldData {
 		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);
 		this.cubeTypes = new Uint8Array(cubeTypeBuffer);
 		this.initializeCubeTypes();
+
+		this.cubeSolid = new Array(this.numberOfCubes);
+		this.initializeCubeSolidBuffer();
+
+		this.cubeWalkable = new Array(this.numberOfCubes);
+		this.initializeCubeWalkable();
+
 	}
 
 	initializeCubeTypes() {
 		let cubeIndex = 0;
-		for(let x = 0; x < this.chunkSize.x * this.numberOfChunks.x; x++) {
-			for(let z = 0; z < this.chunkSize.z * this.numberOfChunks.z; z++) {
+		for(let x = 0; x < this.worldSize.x; x++) {
+			for(let z = 0; z < this.worldSize.z; z++) {
 				let height = this.getHeightFromSimplex(x, z);
-				for(let y = 0; y < this.chunkSize.y; y++) {
+				for(let y = 0; y < this.worldSize.y; y++) {
 					if(y <= height - 2) {
 						this.cubeTypes[cubeIndex] = 0;
 					} else if(y <= height && y <= this.getSandHeightFromSimplex(x, z)) {
@@ -44,6 +50,56 @@ class WorldData {
 				}
 			}
 		}
+	}
+
+	initializeCubeSolidBuffer() {
+		let cubeIndex = 0;
+		for(let x = 0; x < this.worldSize.x; x++) {
+			for(let z = 0; z < this.worldSize.z; z++) {
+				for(let y = 0; y < this.worldSize.y; y++) {
+					if( this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_AIR &&
+						this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_WATER) {
+						this.cubeSolid[cubeIndex] = true;
+					} else {
+						this.cubeSolid[cubeIndex] = false;
+					}
+					cubeIndex++;
+				}
+			}
+		}		
+	}
+
+	initializeCubeWalkable() {
+		let cubeIndex = 0;
+		for(let x = 0; x < this.worldSize.x; x++) {
+			for(let z = 0; z < this.worldSize.z; z++) {
+				for(let y = 0; y < this.worldSize.y - 2; y++) {
+					if( this.cubeSolid[cubeIndex] === true &&
+						this.cubeSolid[this.getIndexFromCoordinates(x, y + 1, z)] === true &&
+						this.cubeSolid[this.getIndexFromCoordinates(x, y + 2, z)] === true ) {
+						this.cubeWalkable[cubeIndex] = true;
+					} else {
+						this.cubeWalkable[cubeIndex] = false;
+					}
+					cubeIndex++;
+				}
+
+				if( this.cubeSolid[cubeIndex] === true &&
+					this.cubeSolid[this.getIndexFromCoordinates(x, y + 1, z)] === true ) {
+					this.cubeWalkable[cubeIndex] = true;
+				} else {
+					this.cubeWalkable[cubeIndex] = false;
+				}
+				cubeIndex++;
+
+				if( this.cubeSolid[cubeIndex] === true) {
+					this.cubeWalkable[cubeIndex] = true;
+				} else {
+					this.cubeWalkable[cubeIndex] = false;
+				}
+				cubeIndex++;			
+			}
+		}		
 	}
 
 	getHeightFromSimplex(x, z) {

@@ -79,7 +79,7 @@ var selectedCubeMesh = new THREE.Mesh( selechtedCubeGeometry, selechtedCubeMater
 scene.add( selectedCubeMesh );
 
 // Initialize a dwarf
-var dwarf = new Dwarf(scene, worldData);
+var entityManager = new EntityManager(scene, worldData);
 
 // Main game loop
 var main = function () {
@@ -107,7 +107,7 @@ var main = function () {
 			selectedCubeMesh.position.z = 100000;			
 		}
 
-		dwarf.update(mouseIntersectionCoords);
+		entityManager.update(mouseIntersectionCoords);
 
 		renderer.render(scene, camera);
 		stats.end();
