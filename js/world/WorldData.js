@@ -17,15 +17,17 @@ class WorldData {
 		this.numberOfCubesPerChunk = this.chunkSize.x * this.chunkSize.y * this.chunkSize.z;
 		this.numberOfCubes = this.numberOfCubesPerChunk * this.numberOfChunks.x * this.numberOfChunks.z;
 
-		let cubeTypeBuffer = new ArrayBuffer(this.numberOfCubes);
-		this.cubeTypes = new Uint8Array(cubeTypeBuffer);
+		let cubeTypesBuffer = new ArrayBuffer(this.numberOfCubes);
+		this.cubeTypes = new Uint8Array(cubeTypesBuffer);
 		this.initializeCubeTypes();
 
-		this.cubeSolid = new Array(this.numberOfCubes);
-		this.initializeCubeSolidBuffer();
+		let cubeSoliditiesBuffer = new ArrayBuffer(this.numberOfCubes);
+		this.cubeSolidities = new Uint8Array(cubeSoliditiesBuffer);
+		this.initializeCubeSolidities();
 
-		this.cubeWalkable = new Array(this.numberOfCubes);
-		this.initializeCubeWalkable();
+		let cubeWalkabilitiesBuffer = new ArrayBuffer(this.numberOfCubes);
+		this.cubeWalkabilities = new Uint8Array(cubeWalkabilitiesBuffer);
+		this.initializeCubeWalkabilities();
 
 	}
 
@@ -52,16 +54,16 @@ class WorldData {
 		}
 	}
 
-	initializeCubeSolidBuffer() {
+	initializeCubeSolidities() {
 		let cubeIndex = 0;
 		for(let x = 0; x < this.worldSize.x; x++) {
 			for(let z = 0; z < this.worldSize.z; z++) {
 				for(let y = 0; y < this.worldSize.y; y++) {
 					if( this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_AIR &&
 						this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_WATER) {
-						this.cubeSolid[cubeIndex] = true;
+						this.cubeSolidities[cubeIndex] = 1;
 					} else {
-						this.cubeSolid[cubeIndex] = false;
+						this.cubeSolidities[cubeIndex] = 0;
 					}
 					cubeIndex++;
 				}
@@ -69,33 +71,33 @@ class WorldData {
 		}		
 	}
 
-	initializeCubeWalkable() {
+	initializeCubeWalkabilities() {
 		let cubeIndex = 0;
 		for(let x = 0; x < this.worldSize.x; x++) {
 			for(let z = 0; z < this.worldSize.z; z++) {
 				for(let y = 0; y < this.worldSize.y - 2; y++) {
-					if( this.cubeSolid[cubeIndex] === true &&
-						this.cubeSolid[this.getIndexFromCoordinates(x, y + 1, z)] === true &&
-						this.cubeSolid[this.getIndexFromCoordinates(x, y + 2, z)] === true ) {
-						this.cubeWalkable[cubeIndex] = true;
+					if( this.cubeSolidities[cubeIndex] === 1 &&
+						this.cubeSolidities[this.getIndexFromCoordinates(x, y + 1, z)] === 1 &&
+						this.cubeSolidities[this.getIndexFromCoordinates(x, y + 2, z)] === 1 ) {
+						this.cubeWalkabilities[cubeIndex] = 1;
 					} else {
-						this.cubeWalkable[cubeIndex] = false;
+						this.cubeWalkabilities[cubeIndex] = 0;
 					}
 					cubeIndex++;
 				}
 
-				if( this.cubeSolid[cubeIndex] === true &&
-					this.cubeSolid[this.getIndexFromCoordinates(x, y + 1, z)] === true ) {
-					this.cubeWalkable[cubeIndex] = true;
+				if( this.cubeSolidities[cubeIndex] === 1 &&
+					this.cubeSolidities[this.getIndexFromCoordinates(x, y + 1, z)] === 1 ) {
+					this.cubeWalkabilities[cubeIndex] = 1;
 				} else {
-					this.cubeWalkable[cubeIndex] = false;
+					this.cubeWalkabilities[cubeIndex] = 0;
 				}
 				cubeIndex++;
 
-				if( this.cubeSolid[cubeIndex] === true) {
-					this.cubeWalkable[cubeIndex] = true;
+				if( this.cubeSolidities[cubeIndex] === 1) {
+					this.cubeWalkabilities[cubeIndex] = 1;
 				} else {
-					this.cubeWalkable[cubeIndex] = false;
+					this.cubeWalkabilities[cubeIndex] = 0;
 				}
 				cubeIndex++;			
 			}
@@ -216,108 +218,5 @@ class WorldData {
 
 		let index = x * (this.worldSize.z * this.worldSize.y) + z * this.worldSize.y + y;
 		return index;
-	}
-
-	getIntersectionWithMouseRay(ray) {
-		let MAXIMUM_PICKING_RANGE = 20;
-
-		let mouseRay = [ray.direction.x, ray.direction.y, ray.direction.z];
-		let cameraPosition = [ray.origin.x, ray.origin.y, ray.origin.z];
-
-		// Calculate cameraCoords
-		this.cubeSideLength = 1;
-		let halfCubeSideLength = this.cubeSideLength / 2;
-		let cameraCoords = new Array(3);
-		cameraCoords[0] = Math.floor((cameraPosition[0] + halfCubeSideLength) / this.cubeSideLength);
-		cameraCoords[1] = Math.floor((cameraPosition[1] + halfCubeSideLength) / this.cubeSideLength);
-		cameraCoords[2] = Math.floor((cameraPosition[2] + halfCubeSideLength) / this.cubeSideLength);
-
-		// Get nearest x, y, z planes:
-		let nearest = new Array(3);
-		nearest[0] = cameraCoords[0] + Math.sign(mouseRay[0]) * halfCubeSideLength;
-		nearest[1] = cameraCoords[1] + Math.sign(mouseRay[1]) * halfCubeSideLength;
-		nearest[2] = cameraCoords[2] + Math.sign(mouseRay[2]) * halfCubeSideLength;
-
-		// Get lambdas from ray-plane intersection:
-		let HIGH_LAMBDA_VALUE = 10000;
-		let lambda = [HIGH_LAMBDA_VALUE, HIGH_LAMBDA_VALUE, HIGH_LAMBDA_VALUE];
-		let lambdaMinValue = lambda[0];
-		let lambdaMinIndex = 0;
-		if(Math.abs(mouseRay[0]) > 0.00001) {
-			lambda[0] = (nearest[0] - cameraPosition[0]) / mouseRay[0];
-			if(lambdaMinValue > lambda[0]) {
-				lambdaMinValue = lambda[0];
-				lambdaMinIndex = 0;
-			}
-		}
-		if(Math.abs(mouseRay[1]) > 0.00001) {
-			lambda[1] = (nearest[1] - cameraPosition[1]) / mouseRay[1];
-			if(lambdaMinValue > lambda[1]) {
-				lambdaMinValue = lambda[1];
-				lambdaMinIndex = 1;
-
-			}
-		}
-		if(Math.abs(mouseRay[2]) > 0.00001) {
-			lambda[2] = (nearest[2] - cameraPosition[2]) / mouseRay[2];
-			if(lambdaMinValue > lambda[2]) {
-				lambdaMinValue = lambda[2];
-				lambdaMinIndex = 2;
-			}
-		}
-
-		// Get selectedCubeCoordinates and selectedCubeType
-		let selectedCubeCoordinates = new Array(3);
-		let selectedCubeType = this.CUBE_TYPE_AIR;
-
-		while(lambdaMinValue < MAXIMUM_PICKING_RANGE) {
-			// Calculate the coordinates of the cube, with which the current ray intersects
-			selectedCubeCoordinates[lambdaMinIndex] = (nearest[lambdaMinIndex] + Math.sign(mouseRay[lambdaMinIndex]) * halfCubeSideLength) / this.cubeSideLength;
-			//console.log(selectedCubeCoordinates[lambdaMinIndex]);
-			if(lambdaMinIndex === 0) {
-				selectedCubeCoordinates[1] = Math.floor((cameraPosition[1] + lambdaMinValue * mouseRay[1] + halfCubeSideLength) / this.cubeSideLength);
-				selectedCubeCoordinates[2] = Math.floor((cameraPosition[2] + lambdaMinValue * mouseRay[2] + halfCubeSideLength) / this.cubeSideLength);
-			} else if(lambdaMinIndex === 1) {
-				selectedCubeCoordinates[0] = Math.floor((cameraPosition[0] + lambdaMinValue * mouseRay[0] + halfCubeSideLength) / this.cubeSideLength);
-				selectedCubeCoordinates[2] = Math.floor((cameraPosition[2] + lambdaMinValue * mouseRay[2] + halfCubeSideLength) / this.cubeSideLength);
-			} else if(lambdaMinIndex === 2) {
-				selectedCubeCoordinates[0] = Math.floor((cameraPosition[0] + lambdaMinValue * mouseRay[0] + halfCubeSideLength) / this.cubeSideLength);
-				selectedCubeCoordinates[1] = Math.floor((cameraPosition[1] + lambdaMinValue * mouseRay[1] + halfCubeSideLength) / this.cubeSideLength);
-			}
-
-			// Check if coordinates are inside [min, max] interval, if not set air type
-			if(	selectedCubeCoordinates[0] >= 0 && selectedCubeCoordinates[0] < this.worldSize.x &&
-				selectedCubeCoordinates[1] >= 0 && selectedCubeCoordinates[1] < this.worldSize.y &&
-				selectedCubeCoordinates[2] >= 0 && selectedCubeCoordinates[2] < this.worldSize.z) {
-				selectedCubeType = this.getCubeType(selectedCubeCoordinates);
-			} else {
-				selectedCubeType = this.CUBE_TYPE_AIR;
-			}
-
-			// Reset lambdaMinValue to high value for next iteration or exiting while-loop
-			lambdaMinValue = HIGH_LAMBDA_VALUE;
-
-			// If selectedCubeType is air, go one plane further away from camera of current
-			// lambdaMinIndex plane and find new lambdaMinValue and lambdaMinIndex
-			if(selectedCubeType === this.CUBE_TYPE_AIR) {
-				nearest[lambdaMinIndex] += Math.sign(mouseRay[lambdaMinIndex]);
-				lambda[lambdaMinIndex] = (nearest[lambdaMinIndex] - cameraPosition[lambdaMinIndex]) / mouseRay[lambdaMinIndex];
-
-				// Get lowest lambda
-				for(let i = 0; i < 3; i++) {
-					if(lambdaMinValue > lambda[i]) {
-						lambdaMinValue = lambda[i];
-						lambdaMinIndex = i;
-					}
-				}
-			}
-		}
-
-		// Check if coordinates are inside [min, max] interval, if not set air type
-		if(	selectedCubeType != this.CUBE_TYPE_AIR) {
-			return selectedCubeCoordinates;
-		} else {
-			return null;
-		}
 	}
 }

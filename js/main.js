@@ -9,7 +9,6 @@ document.body.appendChild( renderer.domElement );
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 var controls = new THREE.OrbitControls( camera, renderer.domElement );
-var raycaster = new THREE.Raycaster();
 
 camera.position.x = 0;
 camera.position.y = 0;
@@ -30,7 +29,7 @@ scene.add(ambientLight);
 
 var directionalLight = new THREE.DirectionalLight("rgb(255, 255, 255)", 0.8);
 directionalLight.position.set( 1, 1.75, 1 );
-directionalLight.position.multiplyScalar( 30 );
+directionalLight.position.multiplyScalar( 300 );
 scene.add(directionalLight);
 
 // Initialize worldData and chunkManager
@@ -72,11 +71,8 @@ textureLoader.load('./res/cubes.png', function (texture){
 	console.error('texture not loaded', err)
 });
 
-// Initialize cube which shows the selected cube
-var selechtedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
-var selechtedCubeMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-var selectedCubeMesh = new THREE.Mesh( selechtedCubeGeometry, selechtedCubeMaterial );
-scene.add( selectedCubeMesh );
+// Initialize mousePicker
+var mousePicker = new MousePicker(scene, camera, worldData);
 
 // Initialize a dwarf
 var entityManager = new EntityManager(scene, worldData);
@@ -93,21 +89,9 @@ var main = function () {
 		stats.begin();
 
 		controls.update();
-		raycaster.setFromCamera( mouse.position, camera );
-		
-		let mouseIntersectionCoords = worldData.getIntersectionWithMouseRay(raycaster.ray);
+		mousePicker.update();
 
-		if(mouseIntersectionCoords != null) {
-			selectedCubeMesh.position.x = mouseIntersectionCoords[0];
-			selectedCubeMesh.position.y = mouseIntersectionCoords[1];
-			selectedCubeMesh.position.z = mouseIntersectionCoords[2];
-		} else {
-			selectedCubeMesh.position.x = 100000;
-			selectedCubeMesh.position.y = 100000;
-			selectedCubeMesh.position.z = 100000;			
-		}
-
-		entityManager.update(mouseIntersectionCoords);
+		entityManager.update(mousePicker);
 
 		renderer.render(scene, camera);
 		stats.end();

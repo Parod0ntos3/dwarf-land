@@ -1,9 +1,10 @@
 class EntityManager {
 	constructor(scene, worldData) {
+		this.worldData = worldData;
 		this.dwarf = new Dwarf(scene, worldData);
 	}
 
-	update(mouseIntersectionCoords) {
-		this.dwarf.update(mouseIntersectionCoords);
+	update(mousePicker) {
+		this.dwarf.update(mousePicker.getSelectedCubeCoords());
 	}
 }

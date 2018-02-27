@@ -2,7 +2,7 @@ class Dwarf {
 	constructor(scene, worldData) {
 		// Variables for moving
 		this.moving = false;
-		this.MOVING_SPEED = 2 / 60;
+		this.MOVING_SPEED = 20 / 60;
 		this.targetPosition = [];
 		this.direction = [];
 		this.movingDistance = 0;
@@ -16,13 +16,11 @@ class Dwarf {
 		scene.add( this.dwarfMesh );
 
 		// Set start position
-		this.dwarfMesh.position.x = this.position[0];
-		this.dwarfMesh.position.y = this.position[1];
-		this.dwarfMesh.position.z = this.position[2];
+		this.updateMesh();
 	}
 
 	update(targetCoords) {
-		if(targetCoords != null && mouse.leftClicked === true && this.moving === false) {
+		if(targetCoords != null && this.moving === false) {
 			this.targetPosition[0] = targetCoords[0];
 			this.targetPosition[1] = targetCoords[1] + 1.25;
 			this.targetPosition[2] = targetCoords[2];
@@ -72,5 +70,9 @@ class Dwarf {
 		this.dwarfMesh.position.x = this.position[0];
 		this.dwarfMesh.position.y = this.position[1];
 		this.dwarfMesh.position.z = this.position[2];		
+	}
+
+	getPosition() {
+		return this.position;
 	}
 }
