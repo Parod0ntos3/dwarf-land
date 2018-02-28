@@ -2,7 +2,9 @@
 const mouse = {
 	position : new THREE.Vector2(),
 	leftClicked : false,
-	rightClicked : false
+	rightClicked : false,
+    leftPressed: false,
+    rightPressed: false
 }
 
 document.addEventListener( 'mousemove', onDocumentMouseMove, false );
@@ -18,16 +20,23 @@ function onDocumentMouseMove( event ) {
 
 function onDocumentMouseDown( event ){
     if(event.button === 0) {
-        mouse.leftClicked = true;
+        mouse.leftPressed = true;
     } else if(event.button === 2) {
-    	mouse.rightClicked = true;
+    	mouse.rightPressed = true;
     }
 }
 
 function onDocumentMouseUp( event) {
     if(event.button === 0) {
-        mouse.leftClicked = false;
+        mouse.leftClicked = true;
+        mouse.leftPressed = false;
     } else if(event.button === 2) {
-    	mouse.rightClicked = false;
+    	mouse.rightClicked = true;
+        mouse.rightPressed = false;
     }
+}
+
+function resetMouse() {
+    mouse.leftClicked = false;
+    mouse.rightClicked = false;
 }

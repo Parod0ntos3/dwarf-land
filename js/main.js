@@ -10,9 +10,9 @@ var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
 var controls = new THREE.OrbitControls( camera, renderer.domElement );
 
-camera.position.x = 0;
-camera.position.y = 0;
-camera.position.z = 5;
+camera.position.x = 128;
+camera.position.y = 96;
+camera.position.z = 128;
 controls.target.x = 128;
 controls.target.y = 32;
 controls.target.z = 128;
@@ -73,7 +73,6 @@ textureLoader.load('./res/cubes.png', function (texture){
 
 // Initialize mousePicker
 var mousePicker = new MousePicker(scene, camera, worldData);
-var pathfinder = new Pathfinder(worldData);
 
 // Initialize a dwarf
 var entityManager = new EntityManager(scene, worldData);
@@ -97,6 +96,8 @@ var main = function () {
 		renderer.render(scene, camera);
 		stats.end();
 	}
+
+	resetMouse();
 	requestAnimationFrame( main );
 };
 

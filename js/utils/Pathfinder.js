@@ -78,10 +78,13 @@ class Pathfinder {
 				currentNode = currentNode.parentNode;
 			}
 		}
+		path.reverse();
 
-		console.log(closedSet);
-		console.log(openSet);
-		console.log(path);
+		//console.log(closedSet);
+		//console.log(openSet);
+		//console.log(path);
+
+		return path;
 	}
 
 	getManhattenDistance(coords_1, coords_2) {
@@ -91,6 +94,4 @@ class Pathfinder {
 			Math.abs(coords_1[2] - coords_2[2]);
 		return manhattenDistance;
 	}
-
-	//pathfinder.getPath([109,69,123], [109,69,127])
 }
