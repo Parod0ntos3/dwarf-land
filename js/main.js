@@ -91,6 +91,7 @@ var main = function () {
 		controls.update();
 		mousePicker.update();
 
+		chunkManager.update(mousePicker, scene);
 		entityManager.update(mousePicker);
 
 		renderer.render(scene, camera);
@@ -98,6 +99,7 @@ var main = function () {
 	}
 
 	resetMouse();
+	resetKeyboard();
 	requestAnimationFrame( main );
 };
 

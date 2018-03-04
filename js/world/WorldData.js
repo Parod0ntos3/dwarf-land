@@ -153,8 +153,17 @@ class WorldData {
 		return noise;
 	}
 
+	updateWorldData(coords, type) {
+		this.setCubeType(coords, type);
+		// TODO: Update Walkability
+	}
+
 	getCubeType(coords) {
 		return this.cubeTypes[this.getIndexFromCoordinates(coords)];
+	}
+
+	setCubeType(coords, type) {
+		this.cubeTypes[this.getIndexFromCoordinates(coords)] = type;
 	}
 
 	getCubeWalkability(coords) {

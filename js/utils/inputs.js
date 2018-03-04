@@ -26,7 +26,7 @@ function onDocumentMouseDown( event ){
     }
 }
 
-function onDocumentMouseUp( event) {
+function onDocumentMouseUp( event ) {
     if(event.button === 0) {
         mouse.leftClicked = true;
         mouse.leftPressed = false;
@@ -39,4 +39,30 @@ function onDocumentMouseUp( event) {
 function resetMouse() {
     mouse.leftClicked = false;
     mouse.rightClicked = false;
+}
+
+// Initialize keyboard with eventListeners
+const keyboard = {
+    wPressed : false,
+    wTipped : false
+};
+
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+
+function keyDownHandler( event ) {
+    if(event.keyCode === 87) {
+        keyboard.wPressed = true;
+    }
+}
+
+function keyUpHandler( event ) {
+if(event.keyCode === 87) {
+        keyboard.wPressed = false;
+        keyboard.wTipped = true;
+    }
+}
+
+function resetKeyboard() {
+    keyboard.wTipped = false;
 }
