@@ -7,7 +7,7 @@ class Dwarf {
 		this.movingDirection = [];
 		this.distanceToNextPoint = 0;
 		this.position = [Math.floor(worldData.worldSize.x / 2), 0, Math.floor(worldData.worldSize.z / 2)];
-		this.position[1] = worldData.getHeight(this.position[0], this.position[2]) - 0.75;
+		this.position[1] = worldData.getHeight(this.position[0], this.position[2]);
 
 		this.coords = [];
 		this.updateCoords();
@@ -15,7 +15,7 @@ class Dwarf {
 		this.path = [];
 
 		// Initialize mesh
-		var dwarfGeometry = new THREE.BoxGeometry( 1, 1.5, 1 );
+		var dwarfGeometry = new THREE.BoxGeometry( 1, 1, 1 );
 		var dwarfMaterial = new THREE.MeshBasicMaterial( {color: "rgb(200, 0, 200)"} );
 		this.dwarfMesh = new THREE.Mesh( dwarfGeometry, dwarfMaterial );
 		scene.add( this.dwarfMesh );
@@ -36,7 +36,7 @@ class Dwarf {
 
 	updateMesh() {
 		this.dwarfMesh.position.x = this.position[0];
-		this.dwarfMesh.position.y = this.position[1] + 1.25;
+		this.dwarfMesh.position.y = this.position[1];
 		this.dwarfMesh.position.z = this.position[2];		
 	}
 

@@ -21,13 +21,11 @@ class WorldData {
 		this.cubeTypes = new Uint8Array(cubeTypesBuffer);
 		this.initializeCubeTypes();
 
-		let cubeSoliditiesBuffer = new ArrayBuffer(this.numberOfCubes);
-		this.cubeSolidities = new Uint8Array(cubeSoliditiesBuffer);
-		this.initializeCubeSolidities();
-
 		let cubeWalkabilitiesBuffer = new ArrayBuffer(this.numberOfCubes);
 		this.cubeWalkabilities = new Uint8Array(cubeWalkabilitiesBuffer);
 		this.initializeCubeWalkabilities();
+
+		console.log(this.cubeWalkabilities);
 	}
 
 	initializeCubeTypes() {
@@ -53,52 +51,13 @@ class WorldData {
 		}
 	}
 
-	initializeCubeSolidities() {
-		let cubeIndex = 0;
-		for(let x = 0; x < this.worldSize.x; x++) {
-			for(let z = 0; z < this.worldSize.z; z++) {
-				for(let y = 0; y < this.worldSize.y; y++) {
-					if( this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_AIR &&
-						this.cubeTypes[cubeIndex] !== this.CUBE_TYPE_WATER) {
-						this.cubeSolidities[cubeIndex] = 1;
-					} else {
-						this.cubeSolidities[cubeIndex] = 0;
-					}
-					cubeIndex++;
-				}
-			}
-		}		
-	}
-
 	initializeCubeWalkabilities() {
 		let cubeIndex = 0;
 		for(let x = 0; x < this.worldSize.x; x++) {
 			for(let z = 0; z < this.worldSize.z; z++) {
-				for(let y = 0; y < this.worldSize.y - 2; y++) {
-					if( this.cubeSolidities[cubeIndex] === 1 &&
-						this.cubeSolidities[this.getIndexFromCoordinates([x, y + 1, z])] === 0 &&
-						this.cubeSolidities[this.getIndexFromCoordinates([x, y + 2, z])] === 0 ) {
-						this.cubeWalkabilities[cubeIndex] = 1;
-					} else {
-						this.cubeWalkabilities[cubeIndex] = 0;
-					}
-					cubeIndex++;
+				for(let y = 0; y < this.worldSize.y; y++) {
+					this.updateCubeWalkability([x, y, z]);
 				}
-
-				if( this.cubeSolidities[cubeIndex] === 1 &&
-					this.cubeSolidities[this.getIndexFromCoordinates([x, y + 1, z])] === 0 ) {
-					this.cubeWalkabilities[cubeIndex] = 1;
-				} else {
-					this.cubeWalkabilities[cubeIndex] = 0;
-				}
-				cubeIndex++;
-
-				if( this.cubeSolidities[cubeIndex] === 1) {
-					this.cubeWalkabilities[cubeIndex] = 1;
-				} else {
-					this.cubeWalkabilities[cubeIndex] = 0;
-				}
-				cubeIndex++;			
 			}
 		}
 	}
@@ -154,16 +113,14 @@ class WorldData {
 	}
 
 	updateWorldData(coords, type) {
-		this.setCubeType(coords, type);
-		// TODO: Update Walkability
+		this.cubeTypes[this.getIndexFromCoordinates(coords)] = type;
+		for(let y = -1; y <= 1; y++) {
+			this.updateCubeWalkability([coords[0], coords[1] + y, coords[2]]);
+		}
 	}
 
 	getCubeType(coords) {
 		return this.cubeTypes[this.getIndexFromCoordinates(coords)];
-	}
-
-	setCubeType(coords, type) {
-		this.cubeTypes[this.getIndexFromCoordinates(coords)] = type;
 	}
 
 	getCubeWalkability(coords) {
@@ -171,7 +128,47 @@ class WorldData {
 	}
 
 	setCubeWalkability(coords, walkability) {
+		// Function is used in pathfinder to temporarly set walkability to 0.
 		this.cubeWalkabilities[this.getIndexFromCoordinates(coords)] = walkability;
+	}
+
+	updateCubeWalkability(coords) {
+		let cubeIndex = this.getIndexFromCoordinates(coords);
+		let x = coords[0];
+		let y = coords[1];
+		let z = coords[2];
+
+		if(y === 0) {
+			this.cubeWalkabilities[cubeIndex] = 0;
+			return;
+		}
+
+		let cubeIsSolid = this.cubeTypes[this.getIndexFromCoordinates([x, y, z])] !== this.CUBE_TYPE_AIR &&
+						  this.cubeTypes[this.getIndexFromCoordinates([x, y, z])] !== this.CUBE_TYPE_WATER;
+
+		if(cubeIsSolid === true) {
+			this.cubeWalkabilities[cubeIndex] = 0;
+			return;
+			console.log("return did not happen!");
+		}
+
+		let lowerCubeIsSolid = 	this.cubeTypes[this.getIndexFromCoordinates([x, y - 1, z])] !== this.CUBE_TYPE_AIR &&
+								this.cubeTypes[this.getIndexFromCoordinates([x, y - 1, z])] !== this.CUBE_TYPE_WATER;
+
+		if(lowerCubeIsSolid === true && y === this.worldSize.y - 1) {
+			this.cubeWalkabilities[cubeIndex] = 1;		
+		} else if(lowerCubeIsSolid === true) {
+			let upperCubeIsNotSolid = 	this.cubeTypes[this.getIndexFromCoordinates([x, y + 1, z])] === this.CUBE_TYPE_AIR ||
+										this.cubeTypes[this.getIndexFromCoordinates([x, y + 1, z])] === this.CUBE_TYPE_WATER;
+			if(upperCubeIsNotSolid === true) {
+				this.cubeWalkabilities[cubeIndex] = 1;					
+			} else {
+				this.cubeWalkabilities[cubeIndex] = 0;			
+			}
+		} else {
+			this.cubeWalkabilities[cubeIndex] = 0;			
+		}
+
 	}
 
 	getHeight(x, z) {

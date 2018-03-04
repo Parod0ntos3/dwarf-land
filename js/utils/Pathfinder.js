@@ -80,9 +80,10 @@ class Pathfinder {
 		}
 		path.reverse();
 
-		//console.log(closedSet);
-		//console.log(openSet);
-		//console.log(path);
+		/*console.log("Pathfinder:")
+		console.log(closedSet);
+		console.log(openSet);
+		console.log(path);*/
 
 		return path;
 	}
