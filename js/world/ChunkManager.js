@@ -5,7 +5,7 @@ class ChunkManager {
 		this.chunks = [];
 
 		this.chunkMeshes = [];
-		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture});
+		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
 
 		for(let x_Chunk = 0; x_Chunk < this.worldData.numberOfChunks.x; x_Chunk++) {
 			for(let z_Chunk = 0; z_Chunk < this.worldData.numberOfChunks.z; z_Chunk++) {

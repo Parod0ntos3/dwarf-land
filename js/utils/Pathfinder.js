@@ -14,28 +14,47 @@ class Pathfinder {
 		this.worldData.setCubeWalkability(startCoords, 0);
 
 		let iterations = 0;
-		while ((currentNode.coords[0] !== endCoords[0] || 
+		while ( currentNode.coords[0] !== endCoords[0] || 
 				currentNode.coords[1] !== endCoords[1] || 
-				currentNode.coords[2] !== endCoords[2]) &&
-				openSet.length > 0) {
+				currentNode.coords[2] !== endCoords[2]) {
 			// Iterate through neighbor nodes and put them into openSet if walkable.
-			xLoop: for(let x = -1; x <= 1; x++) {
-				zLoop: for(let z = -1; z <= 1; z++) {
-					yLoop: for(let y = 1; y >= -1; y--) {
-						if(x !== 0 || z !== 0) {
-							let coords = [currentNode.coords[0] + x, currentNode.coords[1] + y, currentNode.coords[2] + z];
-							if(this.worldData.getCubeWalkability(coords) === 1) {
-								// Calculate f = g + h, where g are the costs from the start to
-								// the current field and h are the estimated costs to the target
-								let fCosts = this.getManhattenDistance(startCoords, coords)
-											 + this.getManhattenDistance(endCoords, coords);
-								openSet.push({coords: coords, parentNode: currentNode, costs: fCosts});
+			let neighborCoords = [
+				[currentNode.coords[0] + 1, currentNode.coords[1], currentNode.coords[2]],
+				[currentNode.coords[0], currentNode.coords[1], currentNode.coords[2] + 1],
+				[currentNode.coords[0] - 1, currentNode.coords[1], currentNode.coords[2]],
+				[currentNode.coords[0], currentNode.coords[1], currentNode.coords[2] - 1]
+			];
 
-								this.worldData.setCubeWalkability(coords, 0);
-
-								break yLoop;
-							}
+			neighborCoordsLoop: for(let i = 0; i < neighborCoords.length; i++) {
+				yLoop: for(let y = 1; y >= -1; y--) {
+					let coords = [neighborCoords[i][0], neighborCoords[i][1] + y, neighborCoords[i][2]];
+					
+					// Check if there is air over currentNode.coords if walking up or 
+					// over neighbor.coords if walking down, otherwise entity would collide
+					if(y === 1) {
+						if(worldData.getCubeType([currentNode.coords[0],
+												  currentNode.coords[1] + 2,
+												  currentNode.coords[2]]) !== worldData.CUBE_TYPE_AIR) {
+							continue yLoop;
 						}
+					} else if(y === -1) {
+						if(worldData.getCubeType([coords[0],
+												  coords[1] + 2,
+												  coords[2]]) !== worldData.CUBE_TYPE_AIR) {
+							break yLoop;
+						}
+					}
+					
+					if(this.worldData.getCubeWalkability(coords) === 1) {
+						// Calculate f = g + h, where g are the costs from the start to
+						// the current field and h are the estimated costs to the target
+						let fCosts = this.getManhattenDistance(startCoords, coords)
+									 + this.getManhattenDistance(endCoords, coords);
+						openSet.push({coords: coords, parentNode: currentNode, costs: fCosts});
+
+						this.worldData.setCubeWalkability(coords, 0);
+
+						break yLoop;
 					}
 				}
 			}
@@ -44,16 +63,21 @@ class Pathfinder {
 			closedSet.push(currentNode);
 
 			// Choose field with the lowest costs from the openSet as currentNode for next iteration and remove it from openSet
-			let lowestCosts = 100000;
-			let lowestCostIndex = 0;
-			for(let i = 0; i < openSet.length; i++) {
-				if(lowestCosts > openSet[i].costs) {
-					currentNode = openSet[i];
-					lowestCosts = openSet[i].costs;
-					lowestCostIndex = i;
+			if(openSet.length > 0) {
+				let lowestCosts = 100000;
+				let lowestCostIndex = 0;
+				for(let i = 0; i < openSet.length; i++) {
+					if(lowestCosts > openSet[i].costs) {
+						currentNode = openSet[i];
+						lowestCosts = openSet[i].costs;
+						lowestCostIndex = i;
+					}
 				}
+				openSet.splice(lowestCostIndex,1);
+			} else {
+				// Stop if openSet.length === 0
+				break;
 			}
-			openSet.splice(lowestCostIndex,1);
 
 			if(iterations++ > 1000)
 				break;

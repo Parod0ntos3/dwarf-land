@@ -33,7 +33,7 @@ directionalLight.position.multiplyScalar( 300 );
 scene.add(directionalLight);
 
 // Initialize worldData and chunkManager
-var worldData = new WorldData();
+var worldData = new WorldData(scene);
 var worldSideLength = worldData.chunkSize.x * worldData.numberOfChunks.x;
 var chunkManager;
 var chunkManagerInitialized = false;

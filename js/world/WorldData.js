@@ -1,7 +1,7 @@
 class WorldData {
-	constructor() {
+	constructor(scene) {
 		this.CUBE_TYPE_AIR = 254;
-		this.CUBE_TYPE_WATER = this.CUBE_TYPE_AIR;
+		this.CUBE_TYPE_WATER = 253;
 		this.CUBE_TYPE_OUTSIDE_WORLD = 255;
 
 		this.WATER_SURFACE_HEIGHT = 8;
@@ -25,7 +25,9 @@ class WorldData {
 		this.cubeWalkabilities = new Uint8Array(cubeWalkabilitiesBuffer);
 		this.initializeCubeWalkabilities();
 
-		console.log(this.cubeWalkabilities);
+		this.scene = scene;
+		this.walkabilityPoints = {};
+		this.addWalkabilityToScene(scene);
 	}
 
 	initializeCubeTypes() {
@@ -117,6 +119,9 @@ class WorldData {
 		for(let y = -1; y <= 1; y++) {
 			this.updateCubeWalkability([coords[0], coords[1] + y, coords[2]]);
 		}
+
+		this.scene.remove(this.walkabilityPoints);
+		this.addWalkabilityToScene();
 	}
 
 	getCubeType(coords) {
@@ -138,7 +143,7 @@ class WorldData {
 		let y = coords[1];
 		let z = coords[2];
 
-		if(y === 0) {
+		if(y === 0 || this.cubeTypes[cubeIndex] === this.CUBE_TYPE_WATER) {
 			this.cubeWalkabilities[cubeIndex] = 0;
 			return;
 		}
@@ -231,5 +236,29 @@ class WorldData {
 
 		let index = x * (this.worldSize.z * this.worldSize.y) + z * this.worldSize.y + y;
 		return index;
+	}
+
+	addWalkabilityToScene(scene) {
+		let walkabilityGeometry = new THREE.Geometry();
+
+		for(let x = 0; x < this.worldSize.x; x++) {
+			for(let z = 0; z < this.worldSize.z; z++) {
+				for(let y = 0; y < this.worldSize.y; y++) {
+					if(this.getCubeWalkability([x,y,z]) === 1) {
+						let point = new THREE.Vector3();
+						point.x = x;
+						point.y = y;
+						point.z = z;
+
+						walkabilityGeometry.vertices.push( point );
+					}
+				}
+			}
+		}
+
+		let walkabilityMaterial = new THREE.PointsMaterial( { color: "rgb(255, 0, 0)", size : 0.25 } );
+		this.walkabilityPoints = new THREE.Points( walkabilityGeometry, walkabilityMaterial );
+
+		this.scene.add( this.walkabilityPoints );
 	}
 }

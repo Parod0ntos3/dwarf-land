@@ -37,7 +37,7 @@ class Chunk {
 					let cubeType = worldData.getCubeType([x,y,z]);
 
 					// If cubeType !== worldData.CUBE_TYPE_AIR, check if cube is visible
-					if(cubeType !== worldData.CUBE_TYPE_AIR) {
+					if(cubeType !== worldData.CUBE_TYPE_AIR && cubeType !== worldData.CUBE_TYPE_WATER) {
 
 						// Get the types of the 6 neighbor-cubes
 						let neighborsTypes = worldData.getNeighborsTypes([x, y, z]);
@@ -45,7 +45,8 @@ class Chunk {
 						// Go through array neighborsTypes and check, if individual neighbor cube is solid
 						for(let i = 0; i < 6; i++) {
 							// Check if cubeType of neighbor !== worldData.CUBE_TYPE_AIR
-							if(neighborsTypes[i] !== worldData.CUBE_TYPE_AIR ||
+							if((neighborsTypes[i] !== worldData.CUBE_TYPE_AIR && 
+								neighborsTypes[i] !== worldData.CUBE_TYPE_WATER)||
 							   neighborsTypes[i] === worldData.CUBE_TYPE_OUTSIDE_WORLD) {
 							} else {
 								numberOfVisibleFaces++;
@@ -68,7 +69,7 @@ class Chunk {
 					let cubeType = worldData.getCubeType([x,y,z]);
 
 					// If cubeType !== worldData.CUBE_TYPE_AIR, check if cube is visible
-					if(cubeType !== worldData.CUBE_TYPE_AIR) {
+					if(cubeType !== worldData.CUBE_TYPE_AIR && cubeType !== worldData.CUBE_TYPE_WATER) {
 
 						// Get the types of the 6 neighbor-cubes
 						let neighborsTypes = worldData.getNeighborsTypes([x, y, z]);
@@ -78,7 +79,8 @@ class Chunk {
 						let numberOfVisibleFaces = 0;
 						for(let i = 0; i < 6; i++) {
 							// Check if cubeType of neighbor !== worldData.CUBE_TYPE_AIR
-							if(neighborsTypes[i] !== worldData.CUBE_TYPE_AIR ||
+							if((neighborsTypes[i] !== worldData.CUBE_TYPE_AIR && 
+								neighborsTypes[i] !== worldData.CUBE_TYPE_WATER) ||
 							   neighborsTypes[i] === worldData.CUBE_TYPE_OUTSIDE_WORLD) {
 								faceIsVisibleArray[i] = false;
 							} else {
