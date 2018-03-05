@@ -4,11 +4,6 @@ class Chunk {
 
 		this.numOfVisibleFaces = this.getNumberOfVisibleFaces(worldData, chunkStartCoords);
 
-		//let verticesBuffer = new ArrayBuffer(4 * 12 * 6 * worldData.numberOfCubesPerChunk);
-		//let normalsBuffer = new ArrayBuffer(4 * 12 * 6 * worldData.numberOfCubesPerChunk);
-		//let texCoordsBuffer = new ArrayBuffer(4 * 8 * 6 * worldData.numberOfCubesPerChunk);
-		//let indexBuffer = new ArrayBuffer(4 * 12 * 3 * worldData.numberOfCubesPerChunk);
-
 		let verticesBuffer = new ArrayBuffer(4 * 12 * this.numOfVisibleFaces);
 		let normalsBuffer = new ArrayBuffer(4 * 12 * this.numOfVisibleFaces);
 		let texCoordsBuffer = new ArrayBuffer(4 * 8 * this.numOfVisibleFaces);
@@ -20,20 +15,16 @@ class Chunk {
 		this.indexArray = new Uint32Array(indexBuffer);
 
 		this.verticesCount = 0;
+		this.verticesCountPerLayer = [];
 
 		this.inizializeVertexBufferObjects(worldData, chunkStartCoords);
-
-		this.verticesArray = this.verticesArray.subarray(0, this.verticesCount * 3 * 2 / 3);
-		this.normalsArray = this.normalsArray.subarray(0, this.verticesCount * 3 * 2 / 3);
-		this.texCoordsArray = this.texCoordsArray.subarray(0, this.verticesCount * 2 * 2 / 3);
-		this.indexArray = this.indexArray.subarray(0, this.verticesCount);
 	}
 
 	getNumberOfVisibleFaces(worldData, chunkStartCoords) {
 		let numberOfVisibleFaces = 0;
-		for(let x = chunkStartCoords.x; x < chunkStartCoords.x + worldData.chunkSize.x; x++) {
-			for(let z = chunkStartCoords.z; z < chunkStartCoords.z + worldData.chunkSize.z; z++) {
-				for(let y = 0; y < worldData.chunkSize.y; y++) {
+		for(let y = 0; y < worldData.chunkSize.y; y++) {
+			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + worldData.chunkSize.x; x++) {
+				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + worldData.chunkSize.z; z++) {
 					let cubeType = worldData.getCubeType([x,y,z]);
 
 					// If cubeType !== worldData.CUBE_TYPE_AIR, check if cube is visible
@@ -63,9 +54,9 @@ class Chunk {
 		let cube = new Cube(this.CUBE_SIDE_LENGTH);
 		let arrayIndex = 0;
 		let indexCounter = 0;
-		for(let x = chunkStartCoords.x; x < chunkStartCoords.x + worldData.chunkSize.x; x++) {
-			for(let z = chunkStartCoords.z; z < chunkStartCoords.z + worldData.chunkSize.z; z++) {
-				for(let y = 0; y < worldData.chunkSize.y; y++) {
+		for(let y = 0; y < worldData.chunkSize.y; y++) {
+			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + worldData.chunkSize.x; x++) {
+				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + worldData.chunkSize.z; z++) {
 					let cubeType = worldData.getCubeType([x,y,z]);
 
 					// If cubeType !== worldData.CUBE_TYPE_AIR, check if cube is visible
@@ -110,6 +101,7 @@ class Chunk {
 					}
 				}
 			}
+			this.verticesCountPerLayer.push(arrayIndex * 6);
 		}
 		this.verticesCount = arrayIndex * 6;
 	}

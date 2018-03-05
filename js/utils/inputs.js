@@ -44,20 +44,34 @@ function resetMouse() {
 // Initialize keyboard with eventListeners
 const keyboard = {
     wPressed : false,
-    wTipped : false
+    wTipped : false,
+    upPressed : false,
+    upTipped : false,
+    downPressed : false,
+    downTipped : false
 };
 
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 function keyDownHandler( event ) {
-    if(event.keyCode === 87) {
+    if(event.keyCode === 38) {
+        keyboard.upPressed = true;
+    } else if(event.keyCode === 40) {
+        keyboard.downPressed = true;
+    } else if(event.keyCode === 87) {
         keyboard.wPressed = true;
     }
 }
 
 function keyUpHandler( event ) {
-if(event.keyCode === 87) {
+    if(event.keyCode === 38) {
+        keyboard.upPressed = false;
+        keyboard.upTipped = true;
+    } else if(event.keyCode === 40) {
+        keyboard.downPressed = false;
+        keyboard.downTipped = true;
+    } else if(event.keyCode === 87) {
         keyboard.wPressed = false;
         keyboard.wTipped = true;
     }
@@ -65,4 +79,6 @@ if(event.keyCode === 87) {
 
 function resetKeyboard() {
     keyboard.wTipped = false;
+    keyboard.upTipped = false;
+    keyboard.downTipped = false;
 }

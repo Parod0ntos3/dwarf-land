@@ -7,6 +7,8 @@ class ChunkManager {
 		this.chunkMeshes = [];
 		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
 
+		this.indexOfCurrentLayer = 40;//this.worldData.chunkSize.y - 1;
+
 		for(let x_Chunk = 0; x_Chunk < this.worldData.numberOfChunks.x; x_Chunk++) {
 			for(let z_Chunk = 0; z_Chunk < this.worldData.numberOfChunks.z; z_Chunk++) {
 				let chunkStartCoords = {x: x_Chunk * this.worldData.chunkSize.x, 
@@ -21,7 +23,7 @@ class ChunkManager {
 				chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.normalsArray,3));
 				chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.texCoordsArray,2));
 				chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.indexArray,1));
-				chunkGeometry.drawRange = { start: 0, count: chunk.verticesCount }
+				chunkGeometry.drawRange = { start: 0, count: chunk.verticesCountPerLayer[this.indexOfCurrentLayer] }
 
 				var layerMesh = new THREE.Mesh(chunkGeometry, this.chunkMaterial);
 				this.chunkMeshes.push(layerMesh);
@@ -35,6 +37,19 @@ class ChunkManager {
 		let coords = mousePicker.getSelectedCubeCoords();
 		if(keyboard.wTipped && coords !== null) {
 			this.changeWorldData(coords);
+		} else if(keyboard.downTipped && this.indexOfCurrentLayer > 0) {
+			this.indexOfCurrentLayer--;
+			this.updateDrawRangeOfChunkMeshes();
+		} else if(keyboard.upTipped && this.indexOfCurrentLayer < this.worldData.chunkSize.y - 1) {
+			this.indexOfCurrentLayer++;
+			this.updateDrawRangeOfChunkMeshes();
+		}
+	}
+
+
+	updateDrawRangeOfChunkMeshes() {
+		for(let i = 0; i < this.chunkMeshes.length; i++) {
+			this.chunkMeshes[i].geometry.drawRange.count = this.chunks[i].verticesCountPerLayer[this.indexOfCurrentLayer];
 		}
 	}
 
@@ -55,7 +70,7 @@ class ChunkManager {
 			chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.normalsArray,3));
 			chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.texCoordsArray,2));
 			chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.indexArray,1));
-			chunkGeometry.drawRange = { start: 0, count: chunk.verticesCount }
+			chunkGeometry.drawRange = { start: 0, count: chunk.verticesCountPerLayer[this.indexOfCurrentLayer] }
 
 			var layerMesh = new THREE.Mesh(chunkGeometry, this.chunkMaterial);
 
