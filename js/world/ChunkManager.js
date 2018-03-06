@@ -8,7 +8,7 @@ class ChunkManager {
 		this.slicedLayerMeshes = [];
 		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
 
-		this.indexOfCurrentLayer = 40//this.worldData.chunkSize.y - 1;
+		this.indexOfCurrentLayer = this.worldData.chunkSize.y - 1;
 
 		for(let x_Chunk = 0; x_Chunk < this.worldData.numberOfChunks.x; x_Chunk++) {
 			for(let z_Chunk = 0; z_Chunk < this.worldData.numberOfChunks.z; z_Chunk++) {
@@ -51,13 +51,12 @@ class ChunkManager {
 		let coords = mousePicker.getSelectedCubeCoords();
 		if(keyboard.wTipped && coords !== null) {
 			this.changeWorldData(coords);
-		} else if(keyboard.fTipped && this.indexOfCurrentLayer > 0) {
-			this.indexOfCurrentLayer--;
-			this.updateDrawRangeOfChunkMeshes();
-		} else if(keyboard.rTipped && this.indexOfCurrentLayer < this.worldData.chunkSize.y - 1) {
-			this.indexOfCurrentLayer++;
+		}
+		if(mousePicker.getIndexOfCurrentLayer() !== this.indexOfCurrentLayer) {
+			this.indexOfCurrentLayer = mousePicker.getIndexOfCurrentLayer();
 			this.updateDrawRangeOfChunkMeshes();
 		}
+		
 	}
 
 

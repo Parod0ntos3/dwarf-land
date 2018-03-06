@@ -8,6 +8,8 @@ class MousePicker {
 		this.CUBE_SIDE_LENGTH = 1;
 		this.CUBE_HALF_SIDE_LENGTH = this.CUBE_SIDE_LENGTH / 2;
 
+		this.indexOfCurrentLayer = 40;
+
 		// Initialize cube which shows the selected cube
 		var selechtedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
 		var selechtedCubeMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
@@ -17,6 +19,13 @@ class MousePicker {
 
 	update() {
 		this.raycaster.setFromCamera( mouse.position, this.camera );
+
+		if(keyboard.fTipped && this.indexOfCurrentLayer > 0) {
+			this.indexOfCurrentLayer--;
+		} else if(keyboard.rTipped && this.indexOfCurrentLayer < this.worldData.worldSize.y - 1) {
+			this.indexOfCurrentLayer++;
+		}
+
 
 		this.selectedCubeCoords = this.getIntersectionWithMouseRay(this.raycaster.ray);
 
@@ -28,6 +37,10 @@ class MousePicker {
 			if(mouse.leftClicked === true)
 				console.log(this.selectedCubeCoords);
 		}
+	}
+
+	getIndexOfCurrentLayer() {
+		return this.indexOfCurrentLayer;
 	}
 
 	getIntersectionWithMouseRay(ray) {
@@ -94,9 +107,9 @@ class MousePicker {
 			}
 
 			// Check if coordinates are inside [min, max] interval, if not set air type
-			if(	selectedCubeCoordinates[0] >= 0 && selectedCubeCoordinates[0] < this.worldData.worldSize.x &&
-				selectedCubeCoordinates[1] >= 0 && selectedCubeCoordinates[1] < this.worldData.worldSize.y &&
-				selectedCubeCoordinates[2] >= 0 && selectedCubeCoordinates[2] < this.worldData.worldSize.z) {
+			if(	selectedCubeCoordinates[0] >= 0 && selectedCubeCoordinates[0] < this.worldData.worldSize.x &&	// <=
+				selectedCubeCoordinates[1] >= 0 && selectedCubeCoordinates[1] <= this.indexOfCurrentLayer &&	// or
+				selectedCubeCoordinates[2] >= 0 && selectedCubeCoordinates[2] < this.worldData.worldSize.z) {	// < ?? 
 				selectedCubeType = this.worldData.getCubeType(selectedCubeCoordinates);
 			} else {
 				selectedCubeType = this.worldData.CUBE_TYPE_AIR;
