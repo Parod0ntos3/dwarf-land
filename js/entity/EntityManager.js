@@ -5,7 +5,7 @@ class EntityManager {
 
 		this.pathfinder = new Pathfinder(worldData);
 		this.miningSelection = new MiningSelection(scene);
-	}
+ 	}
 
 	update(mousePicker) {
 		this.miningSelection.update(mousePicker);
