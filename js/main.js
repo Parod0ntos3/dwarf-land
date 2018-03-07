@@ -39,7 +39,7 @@ var chunkManager;
 var chunkManagerInitialized = false;
 
 // Add water-plane to scene
-var waterPlaneMaterial = new THREE.MeshLambertMaterial( {color: "rgb(100,100,150)", side: THREE.DoubleSide} );
+var waterPlaneMaterial = new THREE.MeshLambertMaterial( {color: "rgb(50,50,255)", side: THREE.DoubleSide, transparent: true, opacity: 0.5} );
 var waterPlaneGeometry = new THREE.PlaneGeometry( worldSideLength, worldSideLength, 1 );
 var waterPlaneMesh = new THREE.Mesh( waterPlaneGeometry, waterPlaneMaterial );
 waterPlaneMesh.position.x = 127.5;

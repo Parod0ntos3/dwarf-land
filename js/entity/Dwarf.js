@@ -25,7 +25,7 @@ class Dwarf {
 	}
 
 	update(targetCoords) {
-		if(targetCoords != null && this.moving === false) {
+		if(targetCoords !== undefined && this.moving === false) {
 			this.addToPath(targetCoords);
 		}
 
@@ -54,13 +54,9 @@ class Dwarf {
 
 	getCoordsForPathfinder() {
 		if(this.path.length > 0) {
-			console.log("Last path element:");
-			console.log(this.path[this.path.length - 1]);
 			return this.path[this.path.length - 1];
 		}
 		else {
-			console.log("Coordinates:");
-			console.log(this.coords);
 			return this.coords;			
 		}
 	}
@@ -74,8 +70,6 @@ class Dwarf {
 			else if(this.path.length === 0)
 				this.path = [additionalPath];
 		}
-
-		//console.log(this.path);
 	}
 
 	moveAlongPath() {

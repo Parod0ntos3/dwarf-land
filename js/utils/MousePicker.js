@@ -11,9 +11,9 @@ class MousePicker {
 		this.indexOfCurrentLayer = 40;
 
 		// Initialize cube which shows the selected cube
-		var selechtedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
-		var selechtedCubeMaterial = new THREE.MeshBasicMaterial( {color: 0x00ff00} );
-		this.selectedCubeMesh = new THREE.Mesh( selechtedCubeGeometry, selechtedCubeMaterial );
+		var selectedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
+		var selectedCubeMaterial = new THREE.MeshBasicMaterial( {color: "rgb(255, 255, 0)", transparent: true, opacity: 0.5} );
+		this.selectedCubeMesh = new THREE.Mesh( selectedCubeGeometry, selectedCubeMaterial );
 		scene.add( this.selectedCubeMesh );
 	}
 
@@ -29,7 +29,7 @@ class MousePicker {
 
 		this.selectedCubeCoords = this.getIntersectionWithMouseRay(this.raycaster.ray);
 
-		if(this.selectedCubeCoords != null) {
+		if(this.selectedCubeCoords !== undefined) {
 			this.selectedCubeMesh.position.x = this.selectedCubeCoords[0];
 			this.selectedCubeMesh.position.y = this.selectedCubeCoords[1];
 			this.selectedCubeMesh.position.z = this.selectedCubeCoords[2];
@@ -138,7 +138,7 @@ class MousePicker {
 		if(	selectedCubeType != this.worldData.CUBE_TYPE_AIR) {
 			return selectedCubeCoordinates;
 		} else {
-			return null;
+			return undefined;
 		}
 	}
 

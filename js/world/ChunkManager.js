@@ -7,6 +7,7 @@ class ChunkManager {
 		this.chunkMeshes = [];
 		this.slicedLayerMeshes = [];
 		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
+		this.slicedLayerMaterial = new THREE.MeshLambertMaterial( {color: "rgb(75,75,75)"} );
 
 		this.indexOfCurrentLayer = this.worldData.chunkSize.y - 1;
 
@@ -34,12 +35,12 @@ class ChunkManager {
 				var slicedLayerGeometry = new THREE.BufferGeometry();
 				slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.sliceLayerVerticesArray,3));
 				slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.sliceLayerNormalsArray,3));
-				slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
+				//slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
 				slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.sliceLayerIndexArray,1));
 				slicedLayerGeometry.setDrawRange(chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].start,
 												 chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].count);
 
-				var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.chunkMaterial);
+				var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.slicedLayerMaterial);
 				this.slicedLayerMeshes.push(slicedLayerMesh);
 
 				scene.add(slicedLayerMesh);
@@ -49,7 +50,7 @@ class ChunkManager {
 
 	update(mousePicker, scene) {
 		let coords = mousePicker.getSelectedCubeCoords();
-		if(keyboard.wTipped && coords !== null) {
+		if(keyboard.wTipped && coords !== undefined) {
 			this.changeWorldData(coords);
 		}
 		if(mousePicker.getIndexOfCurrentLayer() !== this.indexOfCurrentLayer) {
@@ -96,12 +97,12 @@ class ChunkManager {
 			var slicedLayerGeometry = new THREE.BufferGeometry();
 			slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.sliceLayerVerticesArray,3));
 			slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.sliceLayerNormalsArray,3));
-			slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
+			//slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
 			slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.sliceLayerIndexArray,1));
 			slicedLayerGeometry.setDrawRange(chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].start,
 											 chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].count);
 
-			var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.chunkMaterial);
+			var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.slicedLayerMaterial);
 
 			scene.remove(this.slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex]);
 			this.slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex] = slicedLayerMesh;
