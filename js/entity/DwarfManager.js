@@ -1,4 +1,4 @@
-class EntityManager {
+class DwarfManager {
 	constructor(scene, worldData) {
 		this.worldData = worldData;
 		this.dwarf = new Dwarf(scene, worldData);

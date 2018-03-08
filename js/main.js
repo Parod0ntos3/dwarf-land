@@ -75,7 +75,7 @@ textureLoader.load('./res/cubes.png', function (texture){
 var mousePicker = new MousePicker(scene, camera, worldData);
 
 // Initialize a dwarf
-var entityManager = new EntityManager(scene, worldData);
+var dwarfManager = new DwarfManager(scene, worldData);
 
 // Main game loop
 var main = function () {
@@ -92,7 +92,7 @@ var main = function () {
 		mousePicker.update();
 
 		chunkManager.update(mousePicker, scene);
-		entityManager.update(mousePicker);
+		dwarfManager.update(mousePicker);
 
 		renderer.render(scene, camera);
 		stats.end();
