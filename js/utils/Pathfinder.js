@@ -32,15 +32,15 @@ class Pathfinder {
 					// Check if there is air over currentNode.coords if walking up or 
 					// over neighbor.coords if walking down, otherwise entity would collide
 					if(y === 1) {
-						if(worldData.getCubeType([currentNode.coords[0],
+						if(this.worldData.getCubeType([currentNode.coords[0],
 												  currentNode.coords[1] + 2,
-												  currentNode.coords[2]]) !== worldData.CUBE_TYPE_AIR) {
+												  currentNode.coords[2]]) !== this.worldData.CUBE_TYPE_AIR) {
 							continue yLoop;
 						}
 					} else if(y === -1) {
-						if(worldData.getCubeType([coords[0],
+						if(this.worldData.getCubeType([coords[0],
 												  coords[1] + 2,
-												  coords[2]]) !== worldData.CUBE_TYPE_AIR) {
+												  coords[2]]) !== this.worldData.CUBE_TYPE_AIR) {
 							break yLoop;
 						}
 					}

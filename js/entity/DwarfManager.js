@@ -1,9 +1,9 @@
 class DwarfManager {
-	constructor(scene, worldData) {
-		this.worldData = worldData;
-		this.dwarf = new Dwarf(scene, worldData);
+	constructor(scene, worldManager) {
+		this.worldData = worldManager.getWorldData();
+		this.worldManager = worldManager;
+		this.dwarf = new Dwarf(scene, this.worldData);
 
-		this.pathfinder = new Pathfinder(worldData);
 		this.miningSelection = new MiningSelection(scene);
  	}
 
@@ -30,7 +30,7 @@ class DwarfManager {
 								 mousePicker.getSelectedCubeCoords()[1] + 1,
 								 mousePicker.getSelectedCubeCoords()[2]];
 
-			this.dwarf.addToPath(this.pathfinder.getPath(this.dwarf.getCoordsForPathfinder(), clickedCoords));
+			this.dwarf.addToPath(this.worldManager.getPath(this.dwarf.getCoordsForPathfinder(), clickedCoords));
 
 			this.miningSelection.removeFromSelection(mousePicker.getSelectedCubeCoords());
 		}

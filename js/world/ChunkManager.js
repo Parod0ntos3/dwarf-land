@@ -48,7 +48,7 @@ class ChunkManager {
 		}
 	}
 
-	update(mousePicker, scene) {
+	update(mousePicker) {
 		let coords = mousePicker.getSelectedCubeCoords();
 		if(keyboard.wTipped && coords !== undefined) {
 			this.changeWorldData(coords);

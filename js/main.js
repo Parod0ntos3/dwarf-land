@@ -32,10 +32,9 @@ directionalLight.position.set( 1, 1.75, 1 );
 directionalLight.position.multiplyScalar( 300 );
 scene.add(directionalLight);
 
-// Initialize worldData and chunkManager
-var worldData = new WorldData(scene);
-var worldSideLength = worldData.chunkSize.x * worldData.numberOfChunks.x;
-var chunkManager;
+// Initialize worldManager
+var worldManager = new WorldManager(scene, camera);
+var worldSideLength = worldManager.getWorldData().chunkSize.x * worldManager.getWorldData().numberOfChunks.x;
 var chunkManagerInitialized = false;
 
 // Add water-plane to scene
@@ -60,39 +59,35 @@ scene.add(sandPlaneMesh);
 
 // Load the texture asynchronously
 var chunkManagerTexture;
-var textureLoaded = false;
+var textureIsLoading = true;
 var textureLoader = new THREE.TextureLoader();
 textureLoader.load('./res/cubes.png', function (texture){
 	console.log('texture loaded');
 	texture.flipY = false;
-	textureLoaded = true;
+	textureIsLoading = false;
 	chunkManagerTexture = texture;
 }, undefined, function (err) {
 	console.error('texture not loaded', err)
 });
 
-// Initialize mousePicker
-var mousePicker = new MousePicker(scene, camera, worldData);
-
 // Initialize a dwarf
-var dwarfManager = new DwarfManager(scene, worldData);
+var dwarfManager = new DwarfManager(scene, worldManager);
 
 // Main game loop
 var main = function () {
-	if(textureLoaded === true) {
-		chunkManager = new ChunkManager(chunkManagerTexture, scene, worldData);
+	if(textureIsLoading === false && chunkManagerInitialized === false) {
+		worldManager.initializeChunkManager(chunkManagerTexture, scene);
 		chunkManagerInitialized = true;
-		textureLoaded = false;
 	}
 
 	if (chunkManagerInitialized === true) {
 		stats.begin();
 
 		controls.update();
-		mousePicker.update();
 
-		chunkManager.update(mousePicker, scene);
-		dwarfManager.update(mousePicker);
+		worldManager.update();
+
+		dwarfManager.update(worldManager.getMousePicker());
 
 		renderer.render(scene, camera);
 		stats.end();
