@@ -10,14 +10,19 @@ class DwarfManager {
 	update(mousePicker) {
 		this.miningSelection.update(mousePicker);
 
-		// concept:
 		// If miningSelection !== null
-		//	-> look if selection is reachable
-		//	-> give dwarf job mining
-		//	-> mining job pushes walking state to the top (walking to the target)
+		//	-> get for every selected coords all coords from which dwarfs can mine the cube
+		// Concept:
+		//	-> if dwarf has no job: add FIRST selected coord that is reachable to dwarf:
+		//		-> add mining job (selected coord)
+		//		-> add walking job (to FIRST coord to reach selected coord)
+		// Out of scope:
+		// Find best selection and best way for dwarf
+		// Update selection after world has been updated!
+
 
 		if(this.miningSelection.getSelectedCoords().length > 0) {
-			let reachableSelection = this.getReachableSelectedCoords(this.miningSelection.getSelectedCoords());	
+			let walkableCoordsToReachSelectedCoords = this.getWalkableCoordsToReachSelectedCoords(this.miningSelection.getSelectedCoords());
 		}
 
 		if(mouse.rightClicked === true && mousePicker.getSelectedCubeCoords() !== undefined) {
@@ -33,19 +38,17 @@ class DwarfManager {
 		this.dwarf.update();
 	}
 
-	getReachableSelectedCoords(selectedCoords) {
+	getWalkableCoordsToReachSelectedCoords(selectedCoords) {
+		let walkableCoordsToReachSelectedCoords = [];
 		iLoop: for(let i = 0; i < selectedCoords.length; i++) {
-
+			// Check if all (face-) neighbors are solid, if so, selectedCoords[i] is not reachable
 			let neighborsTypes = this.worldData.getNeighborsTypes(selectedCoords[i]);
-			let isNeighborSolidArray = [];
 			let allNeighborsAreSolid = true;
 			for(let j = 0; j < 6; j++) {
 				// Check if neighbor cube is solid
 				if( neighborsTypes[j] !== this.worldData.CUBE_TYPE_AIR && 
 					neighborsTypes[j] !== this.worldData.CUBE_TYPE_WATER) {
-				   	isNeighborSolidArray.push(true);
 				} else {
-				   	isNeighborSolidArray.push(false);
 				   	allNeighborsAreSolid = false;
 				}
 			}
@@ -54,31 +57,50 @@ class DwarfManager {
 				continue iLoop;
 			}
 
-			// Cases:
-			// Standing next to the cube:
-			//		- standing one layer up
-			//		- on the same layer
-			//		- one layer down
-			//		- standing directly under the cube
+			// Convention: mining is only possible over faces, not over corners
+			// Mining is only possible, if standing:
+			// 		-> CASE 1: x+1/x-1 or z+1/z-1 with y-1/y
+			//					-> Check if walkable and coords reachable
+			//					-> minable and reachable
+			//		-> CASE 2: x+1/x-1 or z+1/z-1 with y+1		
+			//					-> Check if cube above is walkable (+2 instead of nonSolid) and coords walkable and reachable
+			//					-> minable and reachable
+			//		-> CASE 3: x and z and y-2
+			//					-> Check if walkable and coords reachable
+			//					-> minable and reachable
 
-			let walkableNeighborsWhichReachCube = [];
-			for(let x = -1; x <= 1; x++) {
-				for(let z = -1; z <= 1; z++) {
-					for(let y = -1; y <= 2; y++) {
-						let coords = [
-							selectedCoords[i][0] + x,
-							selectedCoords[i][1] + y,
-							selectedCoords[i][2] + z
-						]
-						if(this.worldData.getCubeWalkability(coords) === 1) {
-							walkableNeighborsWhichReachCube.push(coords);
-						}
-						. . .
-						. . .
-						. . .
+			let walkableNeighborsToReachCurrentSelectedCube = [];
+			yLoop: for(let y = -1; y <= 1; y++) {
+				// Check additional condition of CASE 2
+				if(y === 1) {
+					let cubeWalkabilityOfCubeAboveSelected = this.worldData.getCubeWalkability([selectedCoords[i][0], selectedCoords[i][1] + y, selectedCoords[i][2]]);
+					if(cubeWalkabilityOfCubeAboveSelected === 0) {
+						break yLoop;
 					}
-				}				
+				}
+				// Loops for CASE 1 and CASE 2
+				let faceNeighbors = [{x: -1, z: 0}, {x: 0, z: -1}, {x: 1, z: 0}, {x: 0, z: 1}]
+				for(let j = 0; j < faceNeighbors.length; j++) {
+					let coordsNextToSelected = [
+						selectedCoords[i][0] + faceNeighbors[j].x,
+						selectedCoords[i][1] + y,
+						selectedCoords[i][2] + faceNeighbors[j].z
+					];
+
+					if(this.worldData.getCubeWalkability(coordsNextToSelected) !== 0) {
+						walkableNeighborsToReachCurrentSelectedCube.push(coordsNextToSelected);
+					}
+				}
 			}
+
+			// Check condition for CASE 3:
+			let coordsTwoVoxelsBelowSelected = [selectedCoords[i][0], selectedCoords[i][1] - 2, selectedCoords[i][2]];
+			if(this.worldData.getCubeWalkability(coordsTwoVoxelsBelowSelected) !== 0) {
+				walkableNeighborsToReachCurrentSelectedCube.push(coordsTwoVoxelsBelowSelected);				
+			}
+
+			walkableCoordsToReachSelectedCoords.push(walkableNeighborsToReachCurrentSelectedCube);
 		}
+		return walkableCoordsToReachSelectedCoords;
 	}
 }

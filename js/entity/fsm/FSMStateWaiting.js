@@ -8,7 +8,7 @@ class FSMStateWaiting extends FSMState {
 	}
 
 	update() {
-		console.log("Updating " + this.STATE_NAME);
+		//console.log("Updating " + this.STATE_NAME);
 	}
 
 	onExit() {
