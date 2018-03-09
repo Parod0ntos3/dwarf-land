@@ -1,17 +1,18 @@
 class WorldManager {
 	constructor(scene, camera) {
 		this.worldData = new WorldData(scene);
-		this.mousePicker = new MousePicker(scene, camera, this.worldData);
-		this.pathfinder = new Pathfinder(this.worldData);
 
 		this.chunkManager = undefined;
 
-		//this.miningSelection = new MiningSelection();
+		this.mousePicker = new MousePicker(scene, camera, this.worldData);
+		this.pathfinder = new Pathfinder(this.worldData);
+		this.miningSelection = new MiningSelection(scene, this.worldData);
 	}
 
 	update() {
 		this.mousePicker.update();
 		this.chunkManager.update(this.mousePicker);
+		this.miningSelection.update(this.mousePicker);
 	}
 
 	getCubeType(coords) {
@@ -40,5 +41,13 @@ class WorldManager {
 
 	initializeChunkManager(texture, scene) {
 		this.chunkManager = new ChunkManager(chunkManagerTexture, scene, this.worldData);		
+	}
+
+	getSelectedCoords() {
+		return this.miningSelection.getSelectedCoords();
+	}
+
+	getWalkableCoordsToReachSelectedCoords() {
+		return this.miningSelection.getWalkableCoordsToReachSelectedCoords();
 	}
 }
