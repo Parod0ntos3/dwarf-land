@@ -50,4 +50,10 @@ class WorldManager {
 	getWalkableCoordsToReachSelectedCoords() {
 		return this.miningSelection.getWalkableCoordsToReachSelectedCoords();
 	}
+
+	removeMinedCube(coords) {
+		// Order of calls is important for updating the reachability of selected coords!
+		this.chunkManager.changeWorldData(coords);
+		this.miningSelection.removeCoordsFromSelection(coords);
+	}
 }

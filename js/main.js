@@ -95,6 +95,7 @@ var main = function () {
 
 	resetMouse();
 	resetKeyboard();
+	updateClock();
 	requestAnimationFrame( main );
 };
 

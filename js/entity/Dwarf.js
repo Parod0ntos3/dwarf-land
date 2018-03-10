@@ -1,10 +1,11 @@
 class Dwarf {
-	constructor(scene, worldData) {
+	constructor(scene, worldManager) {
 		// Variables for moving
 		this.targetPosition = [];
 		this.movingDirection = [];
-		this.position = [Math.floor(worldData.worldSize.x / 2), 0, Math.floor(worldData.worldSize.z / 2)];
-		this.position[1] = worldData.getHeight(this.position[0], this.position[2]);
+		this.worldManager = worldManager;
+		this.position = [Math.floor(worldManager.getWorldData().worldSize.x / 2), 0, Math.floor(worldManager.getWorldData().worldSize.z / 2)];
+		this.position[1] = worldManager.getWorldData().getHeight(this.position[0], this.position[2]);
 
 		this.coords = [];
 		this.updateCoords();
@@ -28,6 +29,7 @@ class Dwarf {
 		this.FSMStateMining = new FSMStateMining(this);
 
 		this.FSM.pushState(this.FSMStateWaiting);
+		this.job = undefined;
 	}
 
 	update() {
@@ -78,7 +80,24 @@ class Dwarf {
 		}
 	}
 
-	setMiningCoords(coords) {
-		this.miningCoords = coords;		
+	getCurrentJob() {
+		return this.job;
+	}
+
+	setCurrentJob(job) {
+		this.job = job;
+		if(this.job !== undefined) {
+			if(this.job.title === "MINING_JOB") {
+				this.miningCoords = job.miningCoords;
+				this.path = job.path;
+
+				if(this.path !== undefined) {
+					this.FSM.pushState(this.FSMStateMining);
+					this.FSM.pushState(this.FSMStateMovingToTarget);
+				} else {
+					this.setCurrentJob(undefined);
+				}
+			}
+		}
 	}
 }

@@ -93,21 +93,17 @@ class Pathfinder {
 		}
 
 		// Get path from currentNode, which is the endNode
-		let path = [];
+		let path = undefined;
 		if( currentNode.coords[0] === endCoords[0] &&
 			currentNode.coords[1] === endCoords[1] && 
 			currentNode.coords[2] === endCoords[2]) {
+			path = [];
 			while (currentNode !== null) {
 				path.push(currentNode.coords);
 				currentNode = currentNode.parentNode;
 			}
+			path.reverse();
 		}
-		path.reverse();
-
-		/*console.log("Pathfinder:")
-		console.log(closedSet);
-		console.log(openSet);
-		console.log(path);*/
 
 		return path;
 	}

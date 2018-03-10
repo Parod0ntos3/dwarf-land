@@ -26,7 +26,7 @@ class MiningSelection{
 		return this.walkableCoordsToReachSelectedCoords;
 	}
 
-	removeFromSelection(coords) {
+	removeCoordsFromSelection(coords) {
 		let index = this.getIndexOfCoordsInSelectedCoordsArray(coords);
 		if(index !== undefined) {
 				this.selectedCoords.splice(index, 1);
@@ -62,6 +62,7 @@ class MiningSelection{
 			}
 
 			if(allNeighborsAreSolid === true) {
+				this.walkableCoordsToReachSelectedCoords.push([]);
 				continue iLoop;
 			}
 

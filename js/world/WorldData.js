@@ -25,9 +25,11 @@ class WorldData {
 		this.cubeWalkabilities = new Uint8Array(cubeWalkabilitiesBuffer);
 		this.initializeCubeWalkabilities();
 
-		//this.scene = scene;
-		//this.walkabilityPoints = {};
-		//this.addWalkabilityToScene(scene);
+		/*
+		this.scene = scene;
+		this.walkabilityPoints = {};
+		this.addWalkabilityToScene(scene);
+		*/
 	}
 
 	initializeCubeTypes() {
@@ -120,8 +122,10 @@ class WorldData {
 			this.updateCubeWalkability([coords[0], coords[1] + y, coords[2]]);
 		}
 
-		//this.scene.remove(this.walkabilityPoints);
-		//this.addWalkabilityToScene();
+		/*
+		this.scene.remove(this.walkabilityPoints);
+		this.addWalkabilityToScene();
+		*/
 	}
 
 	getCubeType(coords) {
