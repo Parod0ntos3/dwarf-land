@@ -7,8 +7,11 @@ class Dwarf {
 		this.position = [Math.floor(worldManager.getWorldData().worldSize.x / 2), 0, Math.floor(worldManager.getWorldData().worldSize.z / 2)];
 		this.position[1] = worldManager.getWorldData().getHeight(this.position[0], this.position[2]);
 
-		this.coords = [];
-		this.updateCoords();
+		this.coords = [
+			Math.floor(this.position[0]),
+			Math.floor(this.position[1]),
+			Math.floor(this.position[2]),
+		];
 
 		this.path = [];
 		this.miningCoords = [];
@@ -42,7 +45,6 @@ class Dwarf {
 		}
 		this.FSM.update();
 
-		this.updateCoords();
 		this.updateMesh();
 	}
 
@@ -52,36 +54,18 @@ class Dwarf {
 		this.dwarfMesh.position.z = this.position[2];		
 	}
 
-	updateCoords() {
-		this.coords = [
-			Math.floor(this.position[0]),
-			Math.floor(this.position[1]),
-			Math.floor(this.position[2]),
-		];
-	}
-
 	getPosition() {
 		return this.position;
 	}
 
-	getCoordsForPathfinder() {
-		if(this.path.length > 0) {
-			return this.path[this.path.length - 1];
-		}
-		else {
-			return this.coords;			
-		}
+	getCoords() {
+		return this.coords;			
 	}
 
-	addToPath(additionalPath) {
-		if(additionalPath.length > 0) {
-			if(additionalPath[0].constructor === Array)
-				this.path = this.path.concat(additionalPath);
-			else if(this.path.length > 0)
-				this.path = this.path.concat([additionalPath]);
-			else if(this.path.length === 0)
-				this.path = [additionalPath];
-		}
+	setCoords(coords) {
+		this.coords[0] = coords[0];
+		this.coords[1] = coords[1];
+		this.coords[2] = coords[2];
 	}
 
 	getCurrentJob() {
@@ -91,17 +75,16 @@ class Dwarf {
 	setCurrentJob(job) {
 		this.job = job;
 		if(this.job !== undefined) {
-			if(this.job.title === "MINING_JOB") {
-				this.miningCoords = job.miningCoords;
-				this.path = job.path;
-
-				if(this.path !== undefined) {
-					this.FSM.pushState(this.FSMStateMining);
-					this.FSM.pushState(this.FSMStateMovingToTarget);
-				} else {
-					this.setCurrentJob(undefined);
-				}
+			if(this.job.title === "MINING_JOB" && this.job.path !== undefined) {
+				this.miningCoords = this.job.miningCoords;
+				this.path = this.job.path;
+				this.FSM.pushState(this.FSMStateMining);
+				this.FSM.pushState(this.FSMStateMovingToTarget);
+			} else {
+				this.job = undefined;
 			}
+		} else {
+			this.job = undefined;
 		}
 	}
 }

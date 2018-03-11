@@ -20,6 +20,7 @@ class FSMStateMovingToTarget extends FSMState {
 			this.dwarf.position[0] = this.dwarf.path[0][0];
 			this.dwarf.position[1] = this.dwarf.path[0][1];
 			this.dwarf.position[2] = this.dwarf.path[0][2];
+			this.dwarf.setCoords(this.dwarf.path[0]);
 			this.dwarf.path.splice(0,1);
 
 			this.calculateMovingDirection();
@@ -32,7 +33,24 @@ class FSMStateMovingToTarget extends FSMState {
 	}
 
 	calculateMovingDirection() {
-		if(this.dwarf.path.length > 0) {
+		// Check if next cube is walkable, if not calculate new path or return
+		if(	this.dwarf.path.length > 0 ) {
+			if(this.dwarf.worldManager.getCubeWalkability(this.dwarf.path[0]) === 0) {
+				let newPath = this.dwarf.worldManager.getPath(
+							this.dwarf.getCoords(),
+							this.dwarf.path[this.dwarf.path.length - 1]);
+				if(newPath !== undefined) {
+					this.dwarf.path = newPath;
+				} else {
+					this.dwarf.path = [];
+					this.dwarf.FSM.popState();
+					return;					
+				}
+			}
+		}
+
+		// Calculate new movingDirection
+		if(	this.dwarf.path.length > 0 ) {
 			// Calculate direction from position to path[0]
 			this.dwarf.movingDirection[0] = this.dwarf.path[0][0] - this.dwarf.position[0];
 			this.dwarf.movingDirection[1] = this.dwarf.path[0][1] - this.dwarf.position[1];

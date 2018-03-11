@@ -2,22 +2,12 @@ class DwarfManager {
 	constructor(scene, worldManager) {
 		this.worldManager = worldManager;
 		this.dwarfs = [];
-		for(let i = 0; i < 2; i++) {
+		for(let i = 0; i < 1; i++) {
 			this.dwarfs[i] = new Dwarf(scene, worldManager);
 		}
  	}
 
 	update(mousePicker) {
-		// If miningSelection !== null
-		//	-> get for every selected coords all coords from which dwarfs can mine the cube
-		// Concept:
-		//	-> if dwarf has no job: add FIRST selected coord that is reachable to dwarf:
-		//		-> add mining job (selected coord)
-		//		-> add walking job (to FIRST coord to reach selected coord)
-		// Out of scope:
-		// Find best selection and best way for dwarf
-		// Update selection after world has been updated!
-
 		let indicesOfDwarfsWithoutJob = [];
 		for(let i = 0; i < this.dwarfs.length; i++) {
 			if(this.dwarfs[i].getCurrentJob() === undefined) {
@@ -46,7 +36,7 @@ class DwarfManager {
 						// TODO: Do not always calculate the path, check if reachable with clusters
 						// and estimate distance with manhatten distance!
 						let path = this.worldManager.getPath(
-							this.dwarfs[indicesOfDwarfsWithoutJob[i]].getCoordsForPathfinder(),
+							this.dwarfs[indicesOfDwarfsWithoutJob[i]].getCoords(),
 							miningSelectionData.walkableCoordsToReachSelectedCoords[j][k]);
 						if(path === undefined) {
 							continue kLoop;

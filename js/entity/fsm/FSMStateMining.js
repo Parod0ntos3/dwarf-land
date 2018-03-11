@@ -8,6 +8,8 @@ class FSMStateMining extends FSMState{
 	onEnter() {
 		console.log("Entering " + this.STATE_NAME);
 		this.miningTime = 1000 + clock.delta;
+
+		// TODO: Check if dwarf can reach the miningCoord
 	}
 
 	update() {
