@@ -14,8 +14,12 @@ class Dwarf {
 		this.miningCoords = [];
 
 		// Initialize mesh
-		var dwarfGeometry = new THREE.BoxGeometry( 1, 1, 1 );
-		var dwarfMaterial = new THREE.MeshBasicMaterial( {color: "rgb(200, 0, 200)"} );
+		let dwarfGeometry = new THREE.BoxGeometry( 1, 1, 1 );
+		let r = Math.floor(Math.random() * 255);
+		let g = Math.floor(Math.random() * 255);
+		let b = Math.floor(Math.random() * 255);
+		let color = "rgb(" + r.toString() + "," +  g.toString() + "," + b.toString() + ")";
+		let dwarfMaterial = new THREE.MeshBasicMaterial( {color: color} );
 		this.dwarfMesh = new THREE.Mesh( dwarfGeometry, dwarfMaterial );
 		scene.add( this.dwarfMesh );
 

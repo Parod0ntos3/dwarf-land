@@ -2,6 +2,7 @@ class MiningSelection{
 	constructor(scene, worldData) {
 		this.selectedCoords = [];
 		this.walkableCoordsToReachSelectedCoords = [];
+		this.assignedToDwarf = [];
 		this.meshIsAddedToScene = false;
 		this.scene = scene;
 		this.worldData = worldData;
@@ -12,24 +13,26 @@ class MiningSelection{
 			let index = this.getIndexOfCoordsInSelectedCoordsArray(mousePicker.getSelectedCubeCoords());
 			if(index === undefined) {
 				this.selectedCoords.push(mousePicker.getSelectedCubeCoords());
+				this.assignedToDwarf.push(false);
 				this.updateWalkableCoordsToReachSelectedCoords();
 				this.updateRenderMesh();
 			}
 		} 
 	}
 
-	getSelectedCoords() {
-		return this.selectedCoords;
-	}
-
-	getWalkableCoordsToReachSelectedCoords() {
-		return this.walkableCoordsToReachSelectedCoords;
+	getMiningSelectionData() {
+		return {
+			selectedCoords: this.selectedCoords,
+			walkableCoordsToReachSelectedCoords: this.walkableCoordsToReachSelectedCoords,
+			assignedToDwarf: this.assignedToDwarf
+		};
 	}
 
 	removeCoordsFromSelection(coords) {
 		let index = this.getIndexOfCoordsInSelectedCoordsArray(coords);
 		if(index !== undefined) {
 				this.selectedCoords.splice(index, 1);
+				this.assignedToDwarf.splice(index, 1);
 				this.updateWalkableCoordsToReachSelectedCoords();
 				this.updateRenderMesh();
 		}		

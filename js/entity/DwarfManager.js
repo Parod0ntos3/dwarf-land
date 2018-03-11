@@ -2,7 +2,7 @@ class DwarfManager {
 	constructor(scene, worldManager) {
 		this.worldManager = worldManager;
 		this.dwarfs = [];
-		for(let i = 0; i < 1; i++) {
+		for(let i = 0; i < 2; i++) {
 			this.dwarfs[i] = new Dwarf(scene, worldManager);
 		}
  	}
@@ -19,15 +19,14 @@ class DwarfManager {
 		// Update selection after world has been updated!
 
 		let indicesOfDwarfsWithoutJob = [];
-		for(let i = 0; i < 1; i++) {
+		for(let i = 0; i < this.dwarfs.length; i++) {
 			if(this.dwarfs[i].getCurrentJob() === undefined) {
 				indicesOfDwarfsWithoutJob.push(i);
 			}
 		}
 
-
-		if(this.worldManager.getSelectedCoords().length > 0) {
-			let walkableCoordsToReachSelectedCoords = this.worldManager.getWalkableCoordsToReachSelectedCoords();
+		let miningSelectionData = this.worldManager.getMiningSelectionData();
+		if(miningSelectionData.selectedCoords.length > 0) {
 			// Iterate through dwarfs without job and try to assign mining jobs
 			iLoop: for(let i = 0; i < indicesOfDwarfsWithoutJob.length; i++) {
 				// Iterate through reachable coords of selected coords and find the nearest reachable
@@ -35,18 +34,20 @@ class DwarfManager {
 				let nearestPath = undefined;
 				let indices = {selectedCoord: undefined, reachableCoord: undefined};
 
-				jLoop: for(let j = 0; j < walkableCoordsToReachSelectedCoords.length; j++) {
-					if(walkableCoordsToReachSelectedCoords[j].length === 0) {
-						// Selected coord is not reachable -> continue with next selected coord
+				jLoop: for(let j = 0; j < miningSelectionData.walkableCoordsToReachSelectedCoords.length; j++) {
+					if(	miningSelectionData.walkableCoordsToReachSelectedCoords[j].length === 0 ||
+						miningSelectionData.assignedToDwarf[j] === true) {
+						// Selected coord is not reachable or already assigned to another dwarf
+						// -> continue with next selected coord
 						continue jLoop;
 					}
 
-					kLoop: for(let k = 0; k < walkableCoordsToReachSelectedCoords[j].length; k++) {
+					kLoop: for(let k = 0; k < miningSelectionData.walkableCoordsToReachSelectedCoords[j].length; k++) {
 						// TODO: Do not always calculate the path, check if reachable with clusters
 						// and estimate distance with manhatten distance!
 						let path = this.worldManager.getPath(
 							this.dwarfs[indicesOfDwarfsWithoutJob[i]].getCoordsForPathfinder(),
-							walkableCoordsToReachSelectedCoords[j][k]);
+							miningSelectionData.walkableCoordsToReachSelectedCoords[j][k]);
 						if(path === undefined) {
 							continue kLoop;
 						}
@@ -60,20 +61,44 @@ class DwarfManager {
 				}
 
 				if(nearestPath !== undefined) {
+					miningSelectionData.assignedToDwarf[indices.selectedCoord] = true;
+					// Initialize miningCoords for dwarfs job with selection from indices
+					let miningCoords = [miningSelectionData.selectedCoords[indices.selectedCoord]];
+					// Check if there are additional selected coords that can be mined from the same reachable coord,
+					// if this is the case, put this selected coord into miningCoords.
+					jLoop: for(let j = 0; j < miningSelectionData.walkableCoordsToReachSelectedCoords.length; j++) {
+						if( miningSelectionData.walkableCoordsToReachSelectedCoords[j].length === 0 ||
+							miningSelectionData.assignedToDwarf[j] === true) {
+							// Selected coord is already assigned to a dwarf or selected
+							// coord is not reachable -> continue with next selected coord
+							continue jLoop;
+						}
+						for(let k = 0; k < miningSelectionData.walkableCoordsToReachSelectedCoords[j].length; k++) {
+						 	if(	miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][0] === 
+								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][0] &&
+								miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][1] === 
+								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][1] &&
+								miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][2] === 
+								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][2]) {
+						 		miningCoords.push(miningSelectionData.selectedCoords[j]);
+							}
+						}
+					}
+
 					let miningJob = {
 						title: "MINING_JOB",
-						miningCoords: this.worldManager.getSelectedCoords()[indices.selectedCoord],
+						miningCoords: miningCoords,
 						path: nearestPath
 					};
 
-					this.dwarfs[i].setCurrentJob(miningJob);
+					this.dwarfs[indicesOfDwarfsWithoutJob[i]].setCurrentJob(miningJob);
 				}
 			}
 		}
 
 
 		
-		for(let i = 0; i < 1; i++) {
+		for(let i = 0; i < this.dwarfs.length; i++) {
 			this.dwarfs[i].update();
 		}
 	}

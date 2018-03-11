@@ -43,12 +43,8 @@ class WorldManager {
 		this.chunkManager = new ChunkManager(chunkManagerTexture, scene, this.worldData);		
 	}
 
-	getSelectedCoords() {
-		return this.miningSelection.getSelectedCoords();
-	}
-
-	getWalkableCoordsToReachSelectedCoords() {
-		return this.miningSelection.getWalkableCoordsToReachSelectedCoords();
+	getMiningSelectionData() {
+		return this.miningSelection.getMiningSelectionData();
 	}
 
 	removeMinedCube(coords) {
