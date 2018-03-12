@@ -3,7 +3,7 @@ class DwarfManager {
 		this.worldManager = worldManager;
 		this.dwarfs = [];
 		for(let i = 0; i < 1; i++) {
-			this.dwarfs[i] = new Dwarf(scene, worldManager);
+			this.dwarfs[i] = new Dwarf(scene, worldManager, i);
 		}
  	}
 
@@ -51,25 +51,21 @@ class DwarfManager {
 				}
 
 				if(nearestPath !== undefined) {
-					miningSelectionData.assignedToDwarf[indices.selectedCoord] = true;
+					miningSelectionData.assignedToDwarf[indices.selectedCoord] = this.dwarfs[i].getId();
 					// Initialize miningCoords for dwarfs job with selection from indices
 					let miningCoords = [miningSelectionData.selectedCoords[indices.selectedCoord]];
 					// Check if there are additional selected coords that can be mined from the same reachable coord,
 					// if this is the case, put this selected coord into miningCoords.
 					jLoop: for(let j = 0; j < miningSelectionData.walkableCoordsToReachSelectedCoords.length; j++) {
 						if( miningSelectionData.walkableCoordsToReachSelectedCoords[j].length === 0 ||
-							miningSelectionData.assignedToDwarf[j] === true) {
+							miningSelectionData.assignedToDwarf[j] !== undefined) {
 							// Selected coord is already assigned to a dwarf or selected
 							// coord is not reachable -> continue with next selected coord
 							continue jLoop;
 						}
 						for(let k = 0; k < miningSelectionData.walkableCoordsToReachSelectedCoords[j].length; k++) {
-						 	if(	miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][0] === 
-								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][0] &&
-								miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][1] === 
-								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][1] &&
-								miningSelectionData.walkableCoordsToReachSelectedCoords[j][k][2] === 
-								miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord][2]) {
+						 	if(	true === areCoordsEqual(miningSelectionData.walkableCoordsToReachSelectedCoords[j][k], 
+			 											miningSelectionData.walkableCoordsToReachSelectedCoords[indices.selectedCoord][indices.reachableCoord])) {
 						 		miningCoords.push(miningSelectionData.selectedCoords[j]);
 							}
 						}
@@ -80,7 +76,6 @@ class DwarfManager {
 						miningCoords: miningCoords,
 						path: nearestPath
 					};
-
 					this.dwarfs[indicesOfDwarfsWithoutJob[i]].setCurrentJob(miningJob);
 				}
 			}

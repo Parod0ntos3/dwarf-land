@@ -61,8 +61,8 @@ class FSM {
 
     callCurrentStatesOnEnter() {
         if(this.currentState !== undefined) {
-            this.currentState.onEnter();
             this.currentStatesOnEnterCalled = true;
+            this.currentState.onEnter();
         }
     }
 

@@ -1,7 +1,8 @@
 class Dwarf {
-	constructor(scene, worldManager) {
+	constructor(scene, worldManager, id) {
+		this.id = id;
+
 		// Variables for moving
-		this.targetPosition = [];
 		this.movingDirection = [];
 		this.worldManager = worldManager;
 		this.position = [Math.floor(worldManager.getWorldData().worldSize.x / 2), 0, Math.floor(worldManager.getWorldData().worldSize.z / 2)];
@@ -52,6 +53,10 @@ class Dwarf {
 		this.dwarfMesh.position.x = this.position[0];
 		this.dwarfMesh.position.y = this.position[1];
 		this.dwarfMesh.position.z = this.position[2];		
+	}
+
+	getId() {
+		return this.id;
 	}
 
 	getPosition() {

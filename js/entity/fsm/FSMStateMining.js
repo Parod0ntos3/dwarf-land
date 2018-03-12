@@ -9,7 +9,23 @@ class FSMStateMining extends FSMState{
 		console.log("Entering " + this.STATE_NAME);
 		this.miningTime = 1000 + clock.delta;
 
-		// TODO: Check if dwarf can reach the miningCoord
+		// Check if miningCoord is reachable
+		let walkableCoordsToReachSelectedCoords = this.dwarf.worldManager.getWalkableCoordsToReachSelectedCoordsBySelectedCoord(this.dwarf.miningCoords[0]);
+		let selectedCoordIsReachable = false;
+		iLoop: for(let i = 0; i < walkableCoordsToReachSelectedCoords.length; i++) {
+			if(areCoordsEqual(walkableCoordsToReachSelectedCoords[i], this.dwarf.getCoords()) === true) {
+				selectedCoordIsReachable = true;
+				break iLoop;
+			}
+		}
+
+		if(selectedCoordIsReachable === false) {
+			for(let i = 0; i < this.dwarf.miningCoords.length; i++) {
+				this.dwarf.worldManager.deAssignMiningCoords(this.dwarf.miningCoords[i]);
+				this.dwarf.worldManager.updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(this.dwarf.miningCoords[i]);
+			}
+			this.dwarf.FSM.popState();
+		}
 	}
 
 	update() {

@@ -8,7 +8,7 @@ class MousePicker {
 		this.CUBE_SIDE_LENGTH = 1;
 		this.CUBE_HALF_SIDE_LENGTH = this.CUBE_SIDE_LENGTH / 2;
 
-		this.indexOfCurrentLayer = 40;
+		this.indexOfCurrentLayer = this.worldData.chunkSize.y - 1;
 
 		// Initialize cube which shows the selected cube
 		var selectedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );

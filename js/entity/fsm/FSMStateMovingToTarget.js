@@ -4,7 +4,7 @@ class FSMStateMovingToTarget extends FSMState {
 		
 		this.dwarf = dwarf;
 
-		this.MOVING_SPEED = 10 / 60;
+		this.MOVING_SPEED = 3 / 60;
 		this.distanceToNextPoint = 0;
 	}
 

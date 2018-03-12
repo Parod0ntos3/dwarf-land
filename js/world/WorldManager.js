@@ -47,6 +47,18 @@ class WorldManager {
 		return this.miningSelection.getMiningSelectionData();
 	}
 
+	getWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords) {
+		return this.miningSelection.getWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);
+	}
+
+	deAssignMiningCoords(coords) {
+		this.miningSelection.deAssignMiningCoords(coords);
+	}
+
+	updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords) {
+		this.miningSelection.updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);		
+	}
+
 	removeMinedCube(coords) {
 		// Order of calls is important for updating the reachability of selected coords!
 		this.chunkManager.changeWorldData(coords);
