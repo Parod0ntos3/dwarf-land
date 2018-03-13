@@ -28,7 +28,7 @@ class Dwarf {
 		scene.add( this.dwarfMesh );
 
 		// Set start position
-		this.updateMesh();
+		this._updateMesh();
 
 		// FSM and States:
 		this.FSM = new FSM();
@@ -40,19 +40,15 @@ class Dwarf {
 		this.job = undefined;
 	}
 
+	// Public methods:
+
 	update() {
 		if(this.path.length > 0 && this.FSM.getCurrentState().STATE_NAME !== "MOVING_TO_TARGET_STATE") {
 			this.FSM.pushState(this.FSMStateMovingToTarget);
 		}
 		this.FSM.update();
 
-		this.updateMesh();
-	}
-
-	updateMesh() {
-		this.dwarfMesh.position.x = this.position[0];
-		this.dwarfMesh.position.y = this.position[1];
-		this.dwarfMesh.position.z = this.position[2];		
+		this._updateMesh();
 	}
 
 	getId() {
@@ -91,5 +87,13 @@ class Dwarf {
 		} else {
 			this.job = undefined;
 		}
+	}
+
+	// Private methods:
+
+	_updateMesh() {
+		this.dwarfMesh.position.x = this.position[0];
+		this.dwarfMesh.position.y = this.position[1];
+		this.dwarfMesh.position.z = this.position[2];		
 	}
 }

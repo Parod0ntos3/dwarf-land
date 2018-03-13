@@ -1,118 +1,124 @@
 class ChunkManager {
 	constructor(texture, scene, voxelTypesData, worldManager) {
-		this.voxelTypesData = voxelTypesData;
-		this.worldManager = worldManager;
+		this._voxelTypesData = voxelTypesData;
+		this._worldManager = worldManager;
 
-		this.chunks = [];
+		this._chunks = [];
 
-		this.chunkMeshes = [];
-		this.slicedLayerMeshes = [];
-		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
-		this.slicedLayerMaterial = new THREE.MeshLambertMaterial( {color: "rgb(75,75,75)"} );
+		this._chunkMeshes = [];
+		this._slicedLayerMeshes = [];
+		this._chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
+		this._slicedLayerMaterial = new THREE.MeshLambertMaterial( {color: "rgb(75,75,75)"} );
 
-		this.indexOfCurrentLayer = WORLD_SIZE.y - 1;
+		this._indexOfCurrentLayer = WORLD_SIZE.y - 1;
 
+		this._initializeMeshes(scene);
+	}
+
+	// Public methods:
+
+	update(mousePicker) {
+		let coords = mousePicker.getSelectedVoxelCoords();
+		if(keyboard.wTipped && coords !== undefined) {
+			this._worldManager.removeMinedVoxel(coords);
+			this.changeWorldData(coords);
+		}
+		if(mousePicker.getIndexOfCurrentLayer() !== this._indexOfCurrentLayer) {
+			this._indexOfCurrentLayer = mousePicker.getIndexOfCurrentLayer();
+			this._updateDrawRangeOfChunkMeshes();
+		}	
+	}
+
+	changeWorldData(coords) {
+		let chunkIndexDataArray = this._getChunkIndexDataOfNeighborsByWorldCoords(coords);
+		for(let i = 0; i < chunkIndexDataArray.length; i++) {
+			let chunkStartCoords = {x: chunkIndexDataArray[i].x_Chunk * CHUNK_SIZE.x, 
+									y: 0,
+									z: chunkIndexDataArray[i].z_Chunk * CHUNK_SIZE.z};
+
+			let chunk = new Chunk(this._voxelTypesData, chunkStartCoords);
+			this._chunks[chunkIndexDataArray[i].chunkIndex] = chunk;
+
+			var chunkGeometry = new THREE.BufferGeometry();
+			chunkGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.getVerticesArray(),3));
+			chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.getNormalsArray(),3));
+			chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.getTexCoordsArray(),2));
+			chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.getIndexArray(),1));
+			chunkGeometry.drawRange = { start: 0, count: chunk.getIndexCountPerLayerByIndex(this._indexOfCurrentLayer) }
+
+			var chunkMesh = new THREE.Mesh(chunkGeometry, this._chunkMaterial);
+
+			scene.remove(this._chunkMeshes[chunkIndexDataArray[i].chunkIndex]);
+			this._chunkMeshes[chunkIndexDataArray[i].chunkIndex] = chunkMesh;
+			scene.add(this._chunkMeshes[chunkIndexDataArray[i].chunkIndex]);
+
+			var slicedLayerGeometry = new THREE.BufferGeometry();
+			slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.getSliceLayerVerticesArray(),3));
+			slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.getSliceLayerNormalsArray(),3));
+			//slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
+			slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.getSliceLayerIndexArray(),1));
+			slicedLayerGeometry.setDrawRange(chunk.getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).start,
+											 chunk.getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).count);
+
+			var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this._slicedLayerMaterial);
+
+			scene.remove(this._slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex]);
+			this._slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex] = slicedLayerMesh;
+			scene.add(this._slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex]);
+
+			console.log("updated chunk " + chunkIndexDataArray[i].chunkIndex);
+		}
+	}
+
+	//Private methods:
+
+	_initializeMeshes(scene) {
 		for(let x_Chunk = 0; x_Chunk < NUMBER_OF_CHUNKS.x; x_Chunk++) {
 			for(let z_Chunk = 0; z_Chunk < NUMBER_OF_CHUNKS.z; z_Chunk++) {
 				let chunkStartCoords = {x: x_Chunk * CHUNK_SIZE.x, 
 										y: 0,
 										z: z_Chunk * CHUNK_SIZE.z};
 
-				let chunk = new Chunk(this.voxelTypesData, chunkStartCoords);
-				this.chunks.push(chunk);
+				let chunk = new Chunk(this._voxelTypesData, chunkStartCoords);
+				this._chunks.push(chunk);
 
 				var chunkGeometry = new THREE.BufferGeometry();
-				chunkGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.verticesArray,3));
-				chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.normalsArray,3));
-				chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.texCoordsArray,2));
-				chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.indexArray,1));
-				chunkGeometry.setDrawRange(0, chunk.indexCountPerLayer[this.indexOfCurrentLayer]);
+				chunkGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.getVerticesArray(),3));
+				chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.getNormalsArray(),3));
+				chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.getTexCoordsArray(),2));
+				chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.getIndexArray(),1));
+				chunkGeometry.setDrawRange(0, chunk.getIndexCountPerLayerByIndex(this._indexOfCurrentLayer));
 
-				var chunkMesh = new THREE.Mesh(chunkGeometry, this.chunkMaterial);
-				this.chunkMeshes.push(chunkMesh);
+				var chunkMesh = new THREE.Mesh(chunkGeometry, this._chunkMaterial);
+				this._chunkMeshes.push(chunkMesh);
 
 				scene.add(chunkMesh);
 				
 				var slicedLayerGeometry = new THREE.BufferGeometry();
-				slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.sliceLayerVerticesArray,3));
-				slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.sliceLayerNormalsArray,3));
+				slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.getSliceLayerVerticesArray(),3));
+				slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.getSliceLayerNormalsArray(),3));
 				//slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
-				slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.sliceLayerIndexArray,1));
-				slicedLayerGeometry.setDrawRange(chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].start,
-												 chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].count);
+				slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.getSliceLayerIndexArray(),1));
+				slicedLayerGeometry.setDrawRange(chunk.getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).start,
+												 chunk.getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).count);
 
-				var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.slicedLayerMaterial);
-				this.slicedLayerMeshes.push(slicedLayerMesh);
+				var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this._slicedLayerMaterial);
+				this._slicedLayerMeshes.push(slicedLayerMesh);
 
 				scene.add(slicedLayerMesh);
 			}
+		}		
+	}
+
+	_updateDrawRangeOfChunkMeshes() {
+		for(let i = 0; i < this._chunkMeshes.length; i++) {
+			this._chunkMeshes[i].geometry.setDrawRange(0, this._chunks[i].getIndexCountPerLayer()[this._indexOfCurrentLayer]);
+			this._slicedLayerMeshes[i].geometry.setDrawRange(this._chunks[i].getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).start,
+												 			this._chunks[i].getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).count);
 		}
 	}
 
-	update(mousePicker) {
-		let coords = mousePicker.getSelectedCubeCoords();
-		if(keyboard.wTipped && coords !== undefined) {
-			this.worldManager.removeMinedVoxel(coords);
-			this.changeWorldData(coords);
-		}
-		if(mousePicker.getIndexOfCurrentLayer() !== this.indexOfCurrentLayer) {
-			this.indexOfCurrentLayer = mousePicker.getIndexOfCurrentLayer();
-			this.updateDrawRangeOfChunkMeshes();
-		}
-		
-	}
-
-
-	updateDrawRangeOfChunkMeshes() {
-		for(let i = 0; i < this.chunkMeshes.length; i++) {
-			this.chunkMeshes[i].geometry.setDrawRange(0, this.chunks[i].indexCountPerLayer[this.indexOfCurrentLayer]);
-			this.slicedLayerMeshes[i].geometry.setDrawRange(this.chunks[i].slicedLayerDrawRanges[this.indexOfCurrentLayer].start,
-												 			this.chunks[i].slicedLayerDrawRanges[this.indexOfCurrentLayer].count);
-		}
-	}
-
-	changeWorldData(coords) {
-		let chunkIndexDataArray = this.getChunkIndexDataOfNeighborsByWorldCoords(coords);
-		for(let i = 0; i < chunkIndexDataArray.length; i++) {
-			let chunkStartCoords = {x: chunkIndexDataArray[i].x_Chunk * CHUNK_SIZE.x, 
-									y: 0,
-									z: chunkIndexDataArray[i].z_Chunk * CHUNK_SIZE.z};
-
-			let chunk = new Chunk(this.voxelTypesData, chunkStartCoords);
-			this.chunks[chunkIndexDataArray[i].chunkIndex] = chunk;
-
-			var chunkGeometry = new THREE.BufferGeometry();
-			chunkGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.verticesArray,3));
-			chunkGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.normalsArray,3));
-			chunkGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.texCoordsArray,2));
-			chunkGeometry.setIndex( new THREE.BufferAttribute(chunk.indexArray,1));
-			chunkGeometry.drawRange = { start: 0, count: chunk.indexCountPerLayer[this.indexOfCurrentLayer] }
-
-			var chunkMesh = new THREE.Mesh(chunkGeometry, this.chunkMaterial);
-
-			scene.remove(this.chunkMeshes[chunkIndexDataArray[i].chunkIndex]);
-			this.chunkMeshes[chunkIndexDataArray[i].chunkIndex] = chunkMesh;
-			scene.add(this.chunkMeshes[chunkIndexDataArray[i].chunkIndex]);
-
-			var slicedLayerGeometry = new THREE.BufferGeometry();
-			slicedLayerGeometry.addAttribute('position', new THREE.BufferAttribute(chunk.sliceLayerVerticesArray,3));
-			slicedLayerGeometry.addAttribute('normal', new THREE.BufferAttribute(chunk.sliceLayerNormalsArray,3));
-			//slicedLayerGeometry.addAttribute('uv', new THREE.BufferAttribute(chunk.sliceLayerTexCoordsArray,2));
-			slicedLayerGeometry.setIndex( new THREE.BufferAttribute(chunk.sliceLayerIndexArray,1));
-			slicedLayerGeometry.setDrawRange(chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].start,
-											 chunk.slicedLayerDrawRanges[this.indexOfCurrentLayer].count);
-
-			var slicedLayerMesh = new THREE.Mesh(slicedLayerGeometry, this.slicedLayerMaterial);
-
-			scene.remove(this.slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex]);
-			this.slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex] = slicedLayerMesh;
-			scene.add(this.slicedLayerMeshes[chunkIndexDataArray[i].chunkIndex]);
-
-			console.log("updated chunk " + chunkIndexDataArray[i].chunkIndex);
-		}
-	}
-
-	getChunkIndexDataOfNeighborsByWorldCoords(coords) {
+	_getChunkIndexDataOfNeighborsByWorldCoords(coords) {
 		let chunkIndexDataArray = [];
 
 		let neighborCoords = [
@@ -123,7 +129,7 @@ class ChunkManager {
 		];
 
 		for(let i = 0; i < neighborCoords.length; i++) {
-			let chunkIndexData = this.getChunkIndexDataByWorldCoords(neighborCoords[i]);
+			let chunkIndexData = this._getChunkIndexDataByWorldCoords(neighborCoords[i]);
 			let chunkIndexInArray = false;
 			for(let j = 0; j < chunkIndexDataArray.length; j++) {
 				if(chunkIndexDataArray[j].chunkIndex === chunkIndexData.chunkIndex) {
@@ -138,7 +144,7 @@ class ChunkManager {
 		return chunkIndexDataArray;
 	}
 
-	getChunkIndexDataByWorldCoords(coords) {
+	_getChunkIndexDataByWorldCoords(coords) {
 		let x_Chunk = Math.floor(coords[0] / CHUNK_SIZE.x);
 		let z_Chunk = Math.floor(coords[2] / CHUNK_SIZE.z);
 

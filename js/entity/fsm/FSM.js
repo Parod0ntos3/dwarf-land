@@ -1,74 +1,76 @@
 class FSM {
  
     constructor() {
-        this.stack = new Array();
-        this.currentState = undefined;
-        this.currentStatesOnEnterCalled = false;
+        this._stack = new Array();
+        this._currentState = undefined;
+        this._currentStateOnEnterCalled = false;
     }
+
+    // Public methods:
  
     update() {
-        if (this.currentState !== undefined) {
-            if(this.currentStatesOnEnterCalled === false) {
+        if (this._currentState !== undefined) {
+            if(this._currentStateOnEnterCalled === false) {
                 this.callCurrentStatesOnEnter();
             }
-            this.currentState.update();
+            this._currentState.update();
         }
     }
  
     popState() {
         this.callCurrentStatesOnExit();
 
-        if(this.stack.length > 0) {
-            this.stack.splice(this.stack.length - 1, 1);
+        if(this._stack.length > 0) {
+            this._stack.splice(this._stack.length - 1, 1);
         }
 
-        this.currentState = this.getCurrentState();
-        this.currentStatesOnEnterCalled = false;
+        this._currentState = this.getCurrentState();
+        this._currentStateOnEnterCalled = false;
     }
  
     pushState(state) {
-        if(this.currentState !== state) {
+        if(this._currentState !== state) {
             this.callCurrentStatesOnExit();
 
-            this.stack.push(state);
+            this._stack.push(state);
 
-            this.currentState = this.getCurrentState();
-            this.currentStatesOnEnterCalled = false;
+            this._currentState = this.getCurrentState();
+            this._currentStateOnEnterCalled = false;
         }
     }
 
     pushStateAndPopCurrentState(state) {
-        if(this.currentState !== state) {
+        if(this._currentState !== state) {
             this.callCurrentStatesOnExit();
             
-            if(this.stack.length > 0) {
-                this.stack.splice(this.stack.length - 1, 1);
+            if(this._stack.length > 0) {
+                this._stack.splice(this._stack.length - 1, 1);
             }
 
-            this.stack.push(state);
+            this._stack.push(state);
 
-            this.currentState = this.getCurrentState();
-            this.currentStatesOnEnterCalled = false;
+            this._currentState = this.getCurrentState();
+            this._currentStateOnEnterCalled = false;
         }
     }
  
     getCurrentState() {
-        if(this.stack.length > 0)
-            return this.stack[this.stack.length - 1];
+        if(this._stack.length > 0)
+            return this._stack[this._stack.length - 1];
         else
             return undefined;
     }
 
     callCurrentStatesOnEnter() {
-        if(this.currentState !== undefined) {
-            this.currentStatesOnEnterCalled = true;
-            this.currentState.onEnter();
+        if(this._currentState !== undefined) {
+            this._currentStateOnEnterCalled = true;
+            this._currentState.onEnter();
         }
     }
 
     callCurrentStatesOnExit() {
-        if(this.currentState !== undefined && this.currentStatesOnEnterCalled === true) {
-            this.currentState.onExit();
+        if(this._currentState !== undefined && this._currentStateOnEnterCalled === true) {
+            this._currentState.onExit();
         }
     }
 }

@@ -1,80 +1,82 @@
 class WorldManager {
 	constructor(scene, camera) {
-		this.voxelTypeData = new VoxelTypeData();
-		this.voxelWalkablilityData = new VoxelWalkabilityData(this.voxelTypeData);
+		this._voxelTypeData = new VoxelTypeData();
+		this._voxelWalkablilityData = new VoxelWalkabilityData(this._voxelTypeData);
 
-		this.chunkManager = undefined;
+		this._chunkManager = undefined;
 
-		this.mousePicker = new MousePicker(scene, camera, this.voxelTypeData);
-		this.pathfinder = new Pathfinder(this.voxelTypeData, this.voxelWalkablilityData);
-		this.miningSelection = new MiningSelection(scene, this.voxelTypeData, this.voxelWalkablilityData);
+		this._mousePicker = new MousePicker(scene, camera, this._voxelTypeData);
+		this._pathfinder = new Pathfinder(this._voxelTypeData, this._voxelWalkablilityData);
+		this._miningSelection = new MiningSelection(scene, this._voxelTypeData, this._voxelWalkablilityData);
 	}
 
+	// Public methods:
+
 	update() {
-		this.mousePicker.update();
-		this.chunkManager.update(this.mousePicker);
-		this.miningSelection.update(this.mousePicker);
+		this._mousePicker.update();
+		this._chunkManager.update(this._mousePicker);
+		this._miningSelection.update(this._mousePicker);
 	}
 
 	updateWorldData(coords, type) {
-		this.voxelTypeData.setVoxelType(coords, type);
+		this._voxelTypeData.setVoxelType(coords, type);
 		for(let y = -1; y <= 1; y++) {
-			this.voxelWalkablilityData.updateVoxelWalkability([coords[0], coords[1] + y, coords[2]]);
+			this._voxelWalkablilityData.updateVoxelWalkability([coords[0], coords[1] + y, coords[2]]);
 		}
 	}
 
 	getVoxelType(coords) {
-		return this.voxelTypeData.getVoxelType(coords);
+		return this._voxelTypeData.getVoxelType(coords);
 	}
 
 	getVoxelWalkability(coords) {
-		return this.voxelWalkablilityData.getVoxelWalkability(coords);
+		return this._voxelWalkablilityData.getVoxelWalkability(coords);
 	}
 
 	getMousePicker() {
-		return this.mousePicker;
+		return this._mousePicker;
 	}
 
 	getvoxelTypeData() {
-		return this.voxelTypeData;
+		return this._voxelTypeData;
 	}
 
 	getVoxelWalkabilityData() {
-		return this.voxelWalkablilityData;
+		return this._voxelWalkablilityData;
 	}
 
 	getPath(startCoords, endCoords) {
-		return this.pathfinder.getPath(startCoords, endCoords);
+		return this._pathfinder.getPath(startCoords, endCoords);
 	}
 
 	initializeChunkManager(texture, scene) {
-		this.chunkManager = new ChunkManager(chunkManagerTexture, scene, this.voxelTypeData, this);		
+		this._chunkManager = new ChunkManager(chunkManagerTexture, scene, this._voxelTypeData, this);		
 	}
 
 	getMiningSelectionData() {
-		return this.miningSelection.getMiningSelectionData();
+		return this._miningSelection.getMiningSelectionData();
 	}
 
 	getWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords) {
-		return this.miningSelection.getWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);
+		return this._miningSelection.getWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);
 	}
 
 	deAssignMiningCoords(coords) {
-		this.miningSelection.deAssignMiningCoords(coords);
+		this._miningSelection.deAssignMiningCoords(coords);
 	}
 
 	updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords) {
-		this.miningSelection.updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);		
+		this._miningSelection.updateWalkableCoordsToReachSelectedCoordsBySelectedCoord(coords);		
 	}
 
 	removeMinedVoxel(coords) {
 		// Order of calls is important for updating the reachability of selected coords!
 		this.updateWorldData(coords, VOXEL_TYPE.AIR);
-		this.chunkManager.changeWorldData(coords);
-		this.miningSelection.removeCoordsFromSelection(coords);
+		this._chunkManager.changeWorldData(coords);
+		this._miningSelection.removeCoordsFromSelection(coords);
 	}
 
 	getHeight(x, z) {
-		return this.voxelTypeData.getHeight(x, z);
+		return this._voxelTypeData.getHeight(x, z);
 	}
 }

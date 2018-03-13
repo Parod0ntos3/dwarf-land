@@ -1,114 +1,155 @@
 class Chunk {
 	constructor(voxelTypesData, chunkStartCoords) {
-		this.CUBE_SIDE_LENGTH = 1;
-
 		// Initialize world vbos:
-		this.numOfVisibleFaces = this.getNumberOfVisibleFaces(voxelTypesData, chunkStartCoords);
+		this._numOfVisibleFaces = this._getNumberOfVisibleFaces(voxelTypesData, chunkStartCoords);
 
-		let verticesBuffer = new ArrayBuffer(4 * 12 * this.numOfVisibleFaces);
-		let normalsBuffer = new ArrayBuffer(4 * 12 * this.numOfVisibleFaces);
-		let texCoordsBuffer = new ArrayBuffer(4 * 8 * this.numOfVisibleFaces);
-		let indexBuffer = new ArrayBuffer(4 * 6 * this.numOfVisibleFaces);
+		let verticesBuffer = new ArrayBuffer(4 * 12 * this._numOfVisibleFaces);
+		let normalsBuffer = new ArrayBuffer(4 * 12 * this._numOfVisibleFaces);
+		let texCoordsBuffer = new ArrayBuffer(4 * 8 * this._numOfVisibleFaces);
+		let indexBuffer = new ArrayBuffer(4 * 6 * this._numOfVisibleFaces);
 
-		this.verticesArray = new Float32Array(verticesBuffer);
-		this.normalsArray = new Float32Array(normalsBuffer);
-		this.texCoordsArray = new Float32Array(texCoordsBuffer);
-		this.indexArray = new Uint32Array(indexBuffer);
+		this._verticesArray = new Float32Array(verticesBuffer);
+		this._normalsArray = new Float32Array(normalsBuffer);
+		this._texCoordsArray = new Float32Array(texCoordsBuffer);
+		this._indexArray = new Uint32Array(indexBuffer);
 
-		this.indexCount = 0;
-		this.indexCountPerLayer = [];
+		this._indexCount = 0;
+		this._indexCountPerLayer = [];
 
-		this.inizializeVertexBufferObjects(voxelTypesData, chunkStartCoords);
+		this._inizializeVertexBufferObjects(voxelTypesData, chunkStartCoords);
 
 		// Initialize sliceLayer vbos:
-		this.slicedLayerDrawRanges = [];
+		this._slicedLayerDrawRanges = [];
 
-		this.numberOfSlicedCubes = this.getNumberOfSlicedCubes(voxelTypesData, chunkStartCoords);
+		this._numberOfSlicedVoxels = this._getNumberOfSlicedVoxels(voxelTypesData, chunkStartCoords);
 
-		let sliceLayerVerticesBuffer = new ArrayBuffer(4 * 12 * this.numberOfSlicedCubes);
-		let sliceLayerNormalsBuffer = new ArrayBuffer(4 * 12 * this.numberOfSlicedCubes);
-		let sliceLayerTexCoordsBuffer = new ArrayBuffer(4 * 8 * this.numberOfSlicedCubes);
-		let sliceLayerIndexBuffer = new ArrayBuffer(4 * 6 * this.numberOfSlicedCubes);
+		let sliceLayerVerticesBuffer = new ArrayBuffer(4 * 12 * this._numberOfSlicedVoxels);
+		let sliceLayerNormalsBuffer = new ArrayBuffer(4 * 12 * this._numberOfSlicedVoxels);
+		let sliceLayerTexCoordsBuffer = new ArrayBuffer(4 * 8 * this._numberOfSlicedVoxels);
+		let sliceLayerIndexBuffer = new ArrayBuffer(4 * 6 * this._numberOfSlicedVoxels);
 
-		this.sliceLayerVerticesArray = new Float32Array(sliceLayerVerticesBuffer);
-		this.sliceLayerNormalsArray = new Float32Array(sliceLayerNormalsBuffer);
-		this.sliceLayerTexCoordsArray = new Float32Array(sliceLayerTexCoordsBuffer);
-		this.sliceLayerIndexArray = new Uint32Array(sliceLayerIndexBuffer);
+		this._sliceLayerVerticesArray = new Float32Array(sliceLayerVerticesBuffer);
+		this._sliceLayerNormalsArray = new Float32Array(sliceLayerNormalsBuffer);
+		this._sliceLayerTexCoordsArray = new Float32Array(sliceLayerTexCoordsBuffer);
+		this._sliceLayerIndexArray = new Uint32Array(sliceLayerIndexBuffer);
 
-		this.initializeSliceLayerVertexBufferObjects(voxelTypesData, chunkStartCoords);
+		this._initializeSliceLayerVertexBufferObjects(voxelTypesData, chunkStartCoords);
 
 	}
 
-	getNumberOfSlicedCubes(voxelTypesData, chunkStartCoords) {
-		let numberOfSlicedCubes = 0;
+	// Public methods:
+
+	getVerticesArray() {
+		return this._verticesArray;
+	}
+
+	getNormalsArray() {
+		return this._normalsArray;
+	}
+	getTexCoordsArray() {
+		return this._texCoordsArray;
+	}
+
+	getIndexArray() {
+		return this._indexArray;
+	}
+
+	getSliceLayerVerticesArray() {
+		return this._sliceLayerVerticesArray;
+	}
+
+	getSliceLayerNormalsArray() {
+		return this._sliceLayerNormalsArray;
+	}
+
+	getSliceLayerTexCoordsArray() {
+		return this._sliceLayerTexCoordsArray;
+	}
+
+	getSliceLayerIndexArray() {
+		return this._sliceLayerIndexArray;
+	}
+
+	getIndexCountPerLayerByIndex(index) {
+		return this._indexCountPerLayer[index];
+	}
+
+	getSlicedLayerDrawRangeByIndex(index) {
+		return this._slicedLayerDrawRanges[index];
+	}
+
+	// Private methods:
+
+	_getNumberOfSlicedVoxels(voxelTypesData, chunkStartCoords) {
+		let numberOfSlicedVoxels = 0;
 		for(let y = 0; y < CHUNK_SIZE.y; y++) {
 			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + CHUNK_SIZE.x; x++) {
 				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + CHUNK_SIZE.z; z++) {
-					let cubeType = voxelTypesData.getVoxelType([x,y,z]);
-					if(cubeType !== VOXEL_TYPE.AIR && cubeType !== VOXEL_TYPE.WATER) {
-						numberOfSlicedCubes++;
+					let voxelType = voxelTypesData.getVoxelType([x,y,z]);
+					if(voxelType !== VOXEL_TYPE.AIR && voxelType !== VOXEL_TYPE.WATER) {
+						numberOfSlicedVoxels++;
 					}					
 				}
 			}
 		}
-		return numberOfSlicedCubes;
+		return numberOfSlicedVoxels;
 	}
 
-	initializeSliceLayerVertexBufferObjects(voxelTypesData, chunkStartCoords) {
-		let cube = new Cube(this.CUBE_SIDE_LENGTH);
+	_initializeSliceLayerVertexBufferObjects(voxelTypesData, chunkStartCoords) {
+		let voxel = new Voxel(VOXEL_SIDE_LENGTH);
 
-		let numberOfSlicedCubes = 0;
+		let numberOfSlicedVoxels = 0;
 		let indexCounter = 0;
 
 		for(let y = 0; y < CHUNK_SIZE.y; y++) {
-			let startIndex = numberOfSlicedCubes * 6;
+			let startIndex = numberOfSlicedVoxels * 6;
 			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + CHUNK_SIZE.x; x++) {
 				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + CHUNK_SIZE.z; z++) {
-					let cubeType = voxelTypesData.getVoxelType([x,y,z]);
+					let voxelType = voxelTypesData.getVoxelType([x,y,z]);
 
-					if(cubeType !== VOXEL_TYPE.AIR && cubeType !== VOXEL_TYPE.WATER) {
+					if(voxelType !== VOXEL_TYPE.AIR && voxelType !== VOXEL_TYPE.WATER) {
 						let faceIsVisibleArray = [false, false, false, false, true, false];
 
-						cube.setPosition([x,y,z]);
-						cube.setTexOffset([5, 0]);
-						cube.setFaceVisibility(faceIsVisibleArray);
+						voxel.setPosition([x,y,z]);
+						voxel.setTexOffset([5, 0]);
+						voxel.setFaceVisibility(faceIsVisibleArray);
 
-						this.sliceLayerVerticesArray.set(cube.getGeometry(), numberOfSlicedCubes * 12);
-						this.sliceLayerNormalsArray.set(cube.getNormals(), numberOfSlicedCubes * 12);
-						this.sliceLayerTexCoordsArray.set(cube.getTexCoords(), numberOfSlicedCubes * 8);
+						this._sliceLayerVerticesArray.set(voxel.getGeometry(), numberOfSlicedVoxels * 12);
+						this._sliceLayerNormalsArray.set(voxel.getNormals(), numberOfSlicedVoxels * 12);
+						this._sliceLayerTexCoordsArray.set(voxel.getTexCoords(), numberOfSlicedVoxels * 8);
 
-						let indices = cube.getIndices();
+						let indices = voxel.getIndices();
 						for(let i = 0; i < indices.length; i++) {
 							indices[i] += indexCounter;
 						}
 						indexCounter += (indices.length / 6) * 4;
-						this.sliceLayerIndexArray.set(new Float32Array(indices), numberOfSlicedCubes * 6);
+						this._sliceLayerIndexArray.set(new Float32Array(indices), numberOfSlicedVoxels * 6);
 
-						numberOfSlicedCubes++;
+						numberOfSlicedVoxels++;
 					}					
 				}
 			}
-			let endIndex = numberOfSlicedCubes * 6;
-			this.slicedLayerDrawRanges.push({start: startIndex, count: endIndex - startIndex});
+			let endIndex = numberOfSlicedVoxels * 6;
+			this._slicedLayerDrawRanges.push({start: startIndex, count: endIndex - startIndex});
 		}
 	}
 
-	getNumberOfVisibleFaces(voxelTypesData, chunkStartCoords) {
+	_getNumberOfVisibleFaces(voxelTypesData, chunkStartCoords) {
 		let numberOfVisibleFaces = 0;
 		for(let y = 0; y < CHUNK_SIZE.y; y++) {
 			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + CHUNK_SIZE.x; x++) {
 				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + CHUNK_SIZE.z; z++) {
-					let cubeType = voxelTypesData.getVoxelType([x,y,z]);
+					let voxelType = voxelTypesData.getVoxelType([x,y,z]);
 
-					// If cubeType !== VOXEL_TYPE.AIR, check if cube is visible
-					if(cubeType !== VOXEL_TYPE.AIR && cubeType !== VOXEL_TYPE.WATER) {
+					// If voxelType !== VOXEL_TYPE.AIR, check if voxel is visible
+					if(voxelType !== VOXEL_TYPE.AIR && voxelType !== VOXEL_TYPE.WATER) {
 
-						// Get the types of the 6 neighbor-cubes
+						// Get the types of the 6 neighbor-voxels
 						let neighborsTypes = voxelTypesData.getNeighborsTypes([x, y, z]);
  
-						// Go through array neighborsTypes and check, if individual neighbor cube is solid
+						// Go through array neighborsTypes and check, if individual neighbor voxel is solid
 						for(let i = 0; i < 6; i++) {
-							// Check if cubeType of neighbor !== VOXEL_TYPE.AIR
+							// Check if voxelType of neighbor !== VOXEL_TYPE.AIR
 							if((neighborsTypes[i] !== VOXEL_TYPE.AIR && 
 								neighborsTypes[i] !== VOXEL_TYPE.WATER)||
 							   neighborsTypes[i] === VOXEL_TYPE.OUTSIDE_WORLD) {
@@ -123,26 +164,26 @@ class Chunk {
 		return numberOfVisibleFaces;
 	}
 
-	inizializeVertexBufferObjects(voxelTypesData, chunkStartCoords) {
-		let cube = new Cube(this.CUBE_SIDE_LENGTH);
+	_inizializeVertexBufferObjects(voxelTypesData, chunkStartCoords) {
+		let voxel = new Voxel(VOXEL_SIDE_LENGTH);
 		let arrayIndex = 0;
 		let indexCounter = 0;
 		for(let y = 0; y < CHUNK_SIZE.y; y++) {
 			for(let x = chunkStartCoords.x; x < chunkStartCoords.x + CHUNK_SIZE.x; x++) {
 				for(let z = chunkStartCoords.z; z < chunkStartCoords.z + CHUNK_SIZE.z; z++) {
-					let cubeType = voxelTypesData.getVoxelType([x,y,z]);
+					let voxelType = voxelTypesData.getVoxelType([x,y,z]);
 
-					// If cubeType !== VOXEL_TYPE.AIR, check if cube is visible
-					if(cubeType !== VOXEL_TYPE.AIR && cubeType !== VOXEL_TYPE.WATER) {
+					// If voxelType !== VOXEL_TYPE.AIR, check if voxel is visible
+					if(voxelType !== VOXEL_TYPE.AIR && voxelType !== VOXEL_TYPE.WATER) {
 
-						// Get the types of the 6 neighbor-cubes
+						// Get the types of the 6 neighbor-voxels
 						let neighborsTypes = voxelTypesData.getNeighborsTypes([x, y, z]);
  
-						// Go through array neighborsTypes and check, if individual neighbor cube is solid
+						// Go through array neighborsTypes and check, if individual neighbor voxel is solid
 						let faceIsVisibleArray = new Array(6);
 						let numberOfVisibleFaces = 0;
 						for(let i = 0; i < 6; i++) {
-							// Check if cubeType of neighbor !== VOXEL_TYPE.AIR
+							// Check if voxelType of neighbor !== VOXEL_TYPE.AIR
 							if((neighborsTypes[i] !== VOXEL_TYPE.AIR && 
 								neighborsTypes[i] !== VOXEL_TYPE.WATER) ||
 							   neighborsTypes[i] === VOXEL_TYPE.OUTSIDE_WORLD) {
@@ -153,29 +194,29 @@ class Chunk {
 							}
 						}
 
-						cube.setPosition([x,y,z]);
+						voxel.setPosition([x,y,z]);
 
-						cube.setTexOffset([cubeType, 0]);
+						voxel.setTexOffset([voxelType, 0]);
 
-						cube.setFaceVisibility(faceIsVisibleArray);
+						voxel.setFaceVisibility(faceIsVisibleArray);
 
-						this.verticesArray.set(cube.getGeometry(), arrayIndex * 12);
-						this.normalsArray.set(cube.getNormals(), arrayIndex * 12);
-						this.texCoordsArray.set(cube.getTexCoords(), arrayIndex * 8);
+						this._verticesArray.set(voxel.getGeometry(), arrayIndex * 12);
+						this._normalsArray.set(voxel.getNormals(), arrayIndex * 12);
+						this._texCoordsArray.set(voxel.getTexCoords(), arrayIndex * 8);
 
-						let indices = cube.getIndices();
+						let indices = voxel.getIndices();
 						for(let i = 0; i < indices.length; i++) {
 							indices[i] += indexCounter;
 						}
 						indexCounter += (indices.length / 6) * 4;
-						this.indexArray.set(new Float32Array(indices), arrayIndex * 6);
+						this._indexArray.set(new Float32Array(indices), arrayIndex * 6);
 
 						arrayIndex += numberOfVisibleFaces;
 					}
 				}
 			}
-			this.indexCountPerLayer.push(arrayIndex * 6);
+			this._indexCountPerLayer.push(arrayIndex * 6);
 		}
-		this.indexCount = arrayIndex * 6;
+		this._indexCount = arrayIndex * 6;
 	}
 }
