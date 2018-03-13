@@ -61,6 +61,10 @@ class FSM {
             return undefined;
     }
 
+    getCurrentStateName() {
+        return this._currentState.getStateName();
+    }
+
     callCurrentStatesOnEnter() {
         if(this._currentState !== undefined) {
             this._currentStateOnEnterCalled = true;

@@ -5,7 +5,7 @@ class Dwarf {
 		// Variables for moving
 		this.movingDirection = [];
 		this.worldManager = worldManager;
-		this.position = [Math.floor(WORLD_SIZE.x / 2), 0, Math.floor(WORLD_SIZE.z / 2)];
+		this.position = [Math.floor(WORLD_SIZE.x / 2) + id, 0, Math.floor(WORLD_SIZE.z / 2) + id];
 		this.position[1] = worldManager.getHeight(this.position[0], this.position[2]);
 
 		this.coords = [
@@ -43,7 +43,7 @@ class Dwarf {
 	// Public methods:
 
 	update() {
-		if(this.path.length > 0 && this.FSM.getCurrentState().STATE_NAME !== "MOVING_TO_TARGET_STATE") {
+		if(this.path.length > 0 && this.FSM.getCurrentStateName() !== "MOVING_TO_TARGET_STATE") {
 			this.FSM.pushState(this.FSMStateMovingToTarget);
 		}
 		this.FSM.update();

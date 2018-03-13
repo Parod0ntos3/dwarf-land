@@ -2,7 +2,7 @@ class DwarfManager {
 	constructor(scene, worldManager) {
 		this._worldManager = worldManager;
 		this._dwarfs = [];
-		for(let i = 0; i < 1; i++) {
+		for(let i = 0; i < 2; i++) {
 			this._dwarfs[i] = new Dwarf(scene, worldManager, i);
 		}
  	}
@@ -28,7 +28,7 @@ class DwarfManager {
 
 				jLoop: for(let j = 0; j < miningSelectionData.walkableCoordsToReachSelectedCoords.length; j++) {
 					if(	miningSelectionData.walkableCoordsToReachSelectedCoords[j].length === 0 ||
-						miningSelectionData.assignedToDwarf[j] === true) {
+						miningSelectionData.assignedToDwarf[j] !== undefined) {
 						// Selected coord is not reachable or already assigned to another dwarf
 						// -> continue with next selected coord
 						continue jLoop;

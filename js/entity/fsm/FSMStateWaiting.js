@@ -1,12 +1,14 @@
 class FSMStateWaiting extends FSMState {
 	constructor(dwarf) {
 		super("WAITING_STATE");
-		this.dwarf = dwarf;
+		this._dwarf = dwarf;
 	}
 
+	// Public methods:
+
 	onEnter() {
-		console.log("Entering " + this.STATE_NAME);
-		this.dwarf.setCurrentJob(undefined);
+		console.log("Entering " + this._STATE_NAME);
+		this._dwarf.setCurrentJob(undefined);
 	}
 
 	update() {
@@ -14,6 +16,6 @@ class FSMStateWaiting extends FSMState {
 	}
 
 	onExit() {
-		console.log("Exiting " + this.STATE_NAME);
+		console.log("Exiting " + this._STATE_NAME);
 	}
 }

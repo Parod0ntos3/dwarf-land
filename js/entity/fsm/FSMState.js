@@ -1,17 +1,23 @@
 class FSMState {
 	constructor(stateName) {
-		this.STATE_NAME = stateName;
+		this._STATE_NAME = stateName;
 	}
 
+	// Public methods:
+
 	onEnter() {
-		console.log("Entering " + this.STATE_NAME);
+		console.log("Entering " + this._STATE_NAME);
 	}
 
 	update() {
-		console.log("Updating " + this.STATE_NAME);
+		console.log("Updating " + this._STATE_NAME);
 	}
 
 	onExit() {
-		console.log("Exiting " + this.STATE_NAME);
+		console.log("Exiting " + this._STATE_NAME);
+	}
+
+	getStateName() {
+		return this._STATE_NAME;
 	}
 }
