@@ -7,7 +7,7 @@ class DwarfManager {
 		}
  	}
 
-	update(mousePicker) {
+	update() {
 		let indicesOfDwarfsWithoutJob = [];
 		for(let i = 0; i < this.dwarfs.length; i++) {
 			if(this.dwarfs[i].getCurrentJob() === undefined) {

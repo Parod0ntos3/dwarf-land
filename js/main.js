@@ -34,7 +34,7 @@ scene.add(directionalLight);
 
 // Initialize worldManager
 var worldManager = new WorldManager(scene, camera);
-var worldSideLength = worldManager.getWorldData().chunkSize.x * worldManager.getWorldData().numberOfChunks.x;
+var worldSideLength = CHUNK_SIZE.x * NUMBER_OF_CHUNKS.x;
 var chunkManagerInitialized = false;
 
 // Add water-plane to scene
@@ -87,7 +87,7 @@ var main = function () {
 
 		worldManager.update();
 
-		dwarfManager.update(worldManager.getMousePicker());
+		dwarfManager.update();
 
 		renderer.render(scene, camera);
 		stats.end();

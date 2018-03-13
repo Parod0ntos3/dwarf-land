@@ -5,8 +5,8 @@ class Dwarf {
 		// Variables for moving
 		this.movingDirection = [];
 		this.worldManager = worldManager;
-		this.position = [Math.floor(worldManager.getWorldData().worldSize.x / 2), 0, Math.floor(worldManager.getWorldData().worldSize.z / 2)];
-		this.position[1] = worldManager.getWorldData().getHeight(this.position[0], this.position[2]);
+		this.position = [Math.floor(WORLD_SIZE.x / 2), 0, Math.floor(WORLD_SIZE.z / 2)];
+		this.position[1] = worldManager.getHeight(this.position[0], this.position[2]);
 
 		this.coords = [
 			Math.floor(this.position[0]),

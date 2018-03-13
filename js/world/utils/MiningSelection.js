@@ -1,11 +1,13 @@
 class MiningSelection{
-	constructor(scene, worldData) {
+	constructor(scene, voxelTypesData, voxelWalkablilityData) {
 		this.selectedCoords = [];
 		this.walkableCoordsToReachSelectedCoords = [];
 		this.assignedToDwarf = [];
 		this.meshIsAddedToScene = false;
 		this.scene = scene;
-		this.worldData = worldData;
+
+		this.voxelTypesData = voxelTypesData;
+		this.voxelWalkablilityData = voxelWalkablilityData;
 	}
 
 	update(mousePicker) {
@@ -84,12 +86,12 @@ class MiningSelection{
 
 	getWalkableCoordsToReachSelectedCoordsByIndex(index) {
 		// Check if all (face-) neighbors are solid, if so, selectedCoords[index] is not reachable
-		let neighborsTypes = this.worldData.getNeighborsTypes(this.selectedCoords[index]);
+		let neighborsTypes = this.voxelTypesData.getNeighborsTypes(this.selectedCoords[index]);
 		let allNeighborsAreSolid = true;
 		for(let j = 0; j < 6; j++) {
 			// Check if neighbor cube is solid
-			if( neighborsTypes[j] !== this.worldData.CUBE_TYPE_AIR && 
-				neighborsTypes[j] !== this.worldData.CUBE_TYPE_WATER) {
+			if( neighborsTypes[j] !== VOXEL_TYPE.AIR && 
+				neighborsTypes[j] !== VOXEL_TYPE.WATER) {
 			} else {
 			   	allNeighborsAreSolid = false;
 			}
@@ -115,7 +117,7 @@ class MiningSelection{
 		yLoop: for(let y = -1; y <= 1; y++) {
 			// Check additional condition of CASE 2
 			if(y === 1) {
-				let cubeWalkabilityOfCubeAboveSelected = this.worldData.getCubeWalkability([this.selectedCoords[index][0], this.selectedCoords[index][1] + y, this.selectedCoords[index][2]]);
+				let cubeWalkabilityOfCubeAboveSelected = this.voxelWalkablilityData.getVoxelWalkability([this.selectedCoords[index][0], this.selectedCoords[index][1] + y, this.selectedCoords[index][2]]);
 				if(cubeWalkabilityOfCubeAboveSelected === 0) {
 					break yLoop;
 				}
@@ -129,7 +131,7 @@ class MiningSelection{
 					this.selectedCoords[index][2] + faceNeighbors[j].z
 				];
 
-				if(this.worldData.getCubeWalkability(coordsNextToSelected) !== 0) {
+				if(this.voxelWalkablilityData.getVoxelWalkability(coordsNextToSelected) !== 0) {
 					walkableNeighborsToReachCurrentSelectedCube.push(coordsNextToSelected);
 				}
 			}
@@ -137,7 +139,7 @@ class MiningSelection{
 
 		// Check condition for CASE 3:
 		let coordsTwoVoxelsBelowSelected = [this.selectedCoords[index][0], this.selectedCoords[index][1] - 2, this.selectedCoords[index][2]];
-		if(this.worldData.getCubeWalkability(coordsTwoVoxelsBelowSelected) !== 0) {
+		if(this.voxelWalkablilityData.getVoxelWalkability(coordsTwoVoxelsBelowSelected) !== 0) {
 			walkableNeighborsToReachCurrentSelectedCube.push(coordsTwoVoxelsBelowSelected);				
 		}
 

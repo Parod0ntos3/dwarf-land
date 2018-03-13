@@ -1,6 +1,7 @@
 class ChunkManager {
-	constructor(texture, scene, worldData) {
-		this.worldData = worldData;
+	constructor(texture, scene, voxelTypesData, worldManager) {
+		this.voxelTypesData = voxelTypesData;
+		this.worldManager = worldManager;
 
 		this.chunks = [];
 
@@ -9,15 +10,15 @@ class ChunkManager {
 		this.chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
 		this.slicedLayerMaterial = new THREE.MeshLambertMaterial( {color: "rgb(75,75,75)"} );
 
-		this.indexOfCurrentLayer = this.worldData.chunkSize.y - 1;
+		this.indexOfCurrentLayer = WORLD_SIZE.y - 1;
 
-		for(let x_Chunk = 0; x_Chunk < this.worldData.numberOfChunks.x; x_Chunk++) {
-			for(let z_Chunk = 0; z_Chunk < this.worldData.numberOfChunks.z; z_Chunk++) {
-				let chunkStartCoords = {x: x_Chunk * this.worldData.chunkSize.x, 
+		for(let x_Chunk = 0; x_Chunk < NUMBER_OF_CHUNKS.x; x_Chunk++) {
+			for(let z_Chunk = 0; z_Chunk < NUMBER_OF_CHUNKS.z; z_Chunk++) {
+				let chunkStartCoords = {x: x_Chunk * CHUNK_SIZE.x, 
 										y: 0,
-										z: z_Chunk * this.worldData.chunkSize.z};
+										z: z_Chunk * CHUNK_SIZE.z};
 
-				let chunk = new Chunk(this.worldData, chunkStartCoords);
+				let chunk = new Chunk(this.voxelTypesData, chunkStartCoords);
 				this.chunks.push(chunk);
 
 				var chunkGeometry = new THREE.BufferGeometry();
@@ -51,6 +52,7 @@ class ChunkManager {
 	update(mousePicker) {
 		let coords = mousePicker.getSelectedCubeCoords();
 		if(keyboard.wTipped && coords !== undefined) {
+			this.worldManager.removeMinedVoxel(coords);
 			this.changeWorldData(coords);
 		}
 		if(mousePicker.getIndexOfCurrentLayer() !== this.indexOfCurrentLayer) {
@@ -70,15 +72,13 @@ class ChunkManager {
 	}
 
 	changeWorldData(coords) {
-		this.worldData.updateWorldData(coords, this.worldData.CUBE_TYPE_AIR);
-
 		let chunkIndexDataArray = this.getChunkIndexDataOfNeighborsByWorldCoords(coords);
 		for(let i = 0; i < chunkIndexDataArray.length; i++) {
-			let chunkStartCoords = {x: chunkIndexDataArray[i].x_Chunk * this.worldData.chunkSize.x, 
+			let chunkStartCoords = {x: chunkIndexDataArray[i].x_Chunk * CHUNK_SIZE.x, 
 									y: 0,
-									z: chunkIndexDataArray[i].z_Chunk * this.worldData.chunkSize.z};
+									z: chunkIndexDataArray[i].z_Chunk * CHUNK_SIZE.z};
 
-			let chunk = new Chunk(this.worldData, chunkStartCoords);
+			let chunk = new Chunk(this.voxelTypesData, chunkStartCoords);
 			this.chunks[chunkIndexDataArray[i].chunkIndex] = chunk;
 
 			var chunkGeometry = new THREE.BufferGeometry();
@@ -139,10 +139,10 @@ class ChunkManager {
 	}
 
 	getChunkIndexDataByWorldCoords(coords) {
-		let x_Chunk = Math.floor(coords[0] / this.worldData.chunkSize.x);
-		let z_Chunk = Math.floor(coords[2] / this.worldData.chunkSize.z);
+		let x_Chunk = Math.floor(coords[0] / CHUNK_SIZE.x);
+		let z_Chunk = Math.floor(coords[2] / CHUNK_SIZE.z);
 
-		let chunkIndex = x_Chunk * this.worldData.numberOfChunks.z + z_Chunk;
+		let chunkIndex = x_Chunk * NUMBER_OF_CHUNKS.z + z_Chunk;
 		return {chunkIndex : chunkIndex, x_Chunk: x_Chunk, z_Chunk : z_Chunk};
 	}
 }

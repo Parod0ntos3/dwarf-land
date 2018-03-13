@@ -1,6 +1,7 @@
 class Pathfinder {
-	constructor(worldData) {
-		this.worldData = worldData;
+	constructor(voxelTypesData, voxelWalkablilityData) {
+		this.voxelTypesData = voxelTypesData;
+		this.voxelWalkablilityData = voxelWalkablilityData;
 	}
 
 	getPath(startCoords, endCoords) {
@@ -11,7 +12,7 @@ class Pathfinder {
 							parentNode: null, 
 							costs: this.getManhattenDistance(startCoords, endCoords) };
 		openSet.push(currentNode);
-		this.worldData.setCubeWalkability(startCoords, 0);
+		this.voxelWalkablilityData.setVoxelWalkability(startCoords, 0);
 
 		let iterations = 0;
 		while ( currentNode.coords[0] !== endCoords[0] || 
@@ -32,27 +33,27 @@ class Pathfinder {
 					// Check if there is air over currentNode.coords if walking up or 
 					// over neighbor.coords if walking down, otherwise entity would collide
 					if(y === 1) {
-						if(this.worldData.getCubeType([currentNode.coords[0],
+						if(this.voxelTypesData.getVoxelType([currentNode.coords[0],
 												  currentNode.coords[1] + 2,
-												  currentNode.coords[2]]) !== this.worldData.CUBE_TYPE_AIR) {
+												  currentNode.coords[2]]) !== VOXEL_TYPE.AIR) {
 							continue yLoop;
 						}
 					} else if(y === -1) {
-						if(this.worldData.getCubeType([coords[0],
+						if(this.voxelTypesData.getVoxelType([coords[0],
 												  coords[1] + 2,
-												  coords[2]]) !== this.worldData.CUBE_TYPE_AIR) {
+												  coords[2]]) !== VOXEL_TYPE.AIR) {
 							break yLoop;
 						}
 					}
 					
-					if(this.worldData.getCubeWalkability(coords) === 1) {
+					if(this.voxelWalkablilityData.getVoxelWalkability(coords) === 1) {
 						// Calculate f = g + h, where g are the costs from the start to
 						// the current field and h are the estimated costs to the target
 						let fCosts = this.getManhattenDistance(startCoords, coords)
 									 + this.getManhattenDistance(endCoords, coords);
 						openSet.push({coords: coords, parentNode: currentNode, costs: fCosts});
 
-						this.worldData.setCubeWalkability(coords, 0);
+						this.voxelWalkablilityData.setVoxelWalkability(coords, 0);
 
 						break yLoop;
 					}
@@ -83,13 +84,13 @@ class Pathfinder {
 				break;
 		}
 
-		// Reset walkability in worldData
-		this.worldData.setCubeWalkability(currentNode.coords, 1);
+		// Reset walkability in voxelWalkabliltyData
+		this.voxelWalkablilityData.setVoxelWalkability(currentNode.coords, 1);
 		for(let i = 0; i < openSet.length; i++) {
-			this.worldData.setCubeWalkability(openSet[i].coords, 1);
+			this.voxelWalkablilityData.setVoxelWalkability(openSet[i].coords, 1);
 		}
 		for(let i = 0; i < closedSet.length; i++) {
-			this.worldData.setCubeWalkability(closedSet[i].coords, 1);
+			this.voxelWalkablilityData.setVoxelWalkability(closedSet[i].coords, 1);
 		}
 
 		// Get path from currentNode, which is the endNode

@@ -35,7 +35,7 @@ class FSMStateMovingToTarget extends FSMState {
 	calculateMovingDirection() {
 		// Check if next cube is walkable, if not calculate new path or return
 		if(	this.dwarf.path.length > 0 ) {
-			if(this.dwarf.worldManager.getCubeWalkability(this.dwarf.path[0]) === 0) {
+			if(this.dwarf.worldManager.getVoxelWalkability(this.dwarf.path[0]) === 0) {
 				let newPath = this.dwarf.worldManager.getPath(
 							this.dwarf.getCoords(),
 							this.dwarf.path[this.dwarf.path.length - 1]);

@@ -31,7 +31,7 @@ class FSMStateMining extends FSMState{
 	update() {
 		this.miningTime -= clock.delta;
 		if(this.miningTime <= 0) {
-			this.dwarf.worldManager.removeMinedCube(this.dwarf.miningCoords[0]);
+			this.dwarf.worldManager.removeMinedVoxel(this.dwarf.miningCoords[0]);
 			this.dwarf.miningCoords.splice(0, 1);
 			if(this.dwarf.miningCoords.length > 0) {
 				this.miningTime = 1000;

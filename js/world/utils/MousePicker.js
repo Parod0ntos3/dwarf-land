@@ -1,14 +1,14 @@
 class MousePicker {
-	constructor(scene, camera, worldData) {
-		this.worldData = worldData;
+	constructor(scene, camera, voxelTypesData) {
 		this.camera = camera;
+		this.voxelTypesData = voxelTypesData;
 
 		this.raycaster = new THREE.Raycaster();
 		this.MAXIMUM_PICKING_RANGE = 25;
 		this.CUBE_SIDE_LENGTH = 1;
 		this.CUBE_HALF_SIDE_LENGTH = this.CUBE_SIDE_LENGTH / 2;
 
-		this.indexOfCurrentLayer = this.worldData.chunkSize.y - 1;
+		this.indexOfCurrentLayer = WORLD_SIZE.y - 1;
 
 		// Initialize cube which shows the selected cube
 		var selectedCubeGeometry = new THREE.BoxGeometry( 1.01, 1.01, 1.01 );
@@ -22,7 +22,7 @@ class MousePicker {
 
 		if(keyboard.fTipped && this.indexOfCurrentLayer > 0) {
 			this.indexOfCurrentLayer--;
-		} else if(keyboard.rTipped && this.indexOfCurrentLayer < this.worldData.worldSize.y - 1) {
+		} else if(keyboard.rTipped && this.indexOfCurrentLayer < WORLD_SIZE.y - 1) {
 			this.indexOfCurrentLayer++;
 		}
 
@@ -86,7 +86,7 @@ class MousePicker {
 
 		// Get selectedCubeCoordinates and selectedCubeType
 		let selectedCubeCoordinates = [0,0,0];
-		let selectedCubeType = this.worldData.CUBE_TYPE_AIR;
+		let selectedCubeType = VOXEL_TYPE.AIR;
 
 		while(lambdaMinValue < this.MAXIMUM_PICKING_RANGE) {
 			// Calculate the coordinates of the cube, with which the current ray intersects
@@ -104,12 +104,12 @@ class MousePicker {
 			}
 
 			// Check if coordinates are inside [min, max] interval, if not set air type
-			if(	selectedCubeCoordinates[0] >= 0 && selectedCubeCoordinates[0] < this.worldData.worldSize.x &&	// <=
+			if(	selectedCubeCoordinates[0] >= 0 && selectedCubeCoordinates[0] < WORLD_SIZE.x &&	// <=
 				selectedCubeCoordinates[1] >= 0 && selectedCubeCoordinates[1] <= this.indexOfCurrentLayer &&	// or
-				selectedCubeCoordinates[2] >= 0 && selectedCubeCoordinates[2] < this.worldData.worldSize.z) {	// < ?? 
-				selectedCubeType = this.worldData.getCubeType(selectedCubeCoordinates);
+				selectedCubeCoordinates[2] >= 0 && selectedCubeCoordinates[2] < WORLD_SIZE.z) {	// < ?? 
+				selectedCubeType = this.voxelTypesData.getVoxelType(selectedCubeCoordinates);
 			} else {
-				selectedCubeType = this.worldData.CUBE_TYPE_AIR;
+				selectedCubeType = VOXEL_TYPE.AIR;
 			}
 
 			// Reset lambdaMinValue to high value for next iteration or exiting while-loop
@@ -117,7 +117,7 @@ class MousePicker {
 
 			// If selectedCubeType is air, go one plane further away from camera of current
 			// lambdaMinIndex plane and find new lambdaMinValue and lambdaMinIndex
-			if(selectedCubeType === this.worldData.CUBE_TYPE_AIR) {
+			if(selectedCubeType === VOXEL_TYPE.AIR) {
 				nearest[lambdaMinIndex] += Math.sign(mouseRay[lambdaMinIndex]);
 				lambda[lambdaMinIndex] = (nearest[lambdaMinIndex] - cameraPosition[lambdaMinIndex]) / mouseRay[lambdaMinIndex];
 
@@ -132,7 +132,7 @@ class MousePicker {
 		}
 
 		// Check if coordinates are inside [min, max] interval, if not set air type
-		if(	selectedCubeType != this.worldData.CUBE_TYPE_AIR) {
+		if(	selectedCubeType != VOXEL_TYPE.AIR) {
 			return selectedCubeCoordinates;
 		} else {
 			return undefined;
