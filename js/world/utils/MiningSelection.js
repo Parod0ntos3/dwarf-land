@@ -105,22 +105,22 @@ class MiningSelection{
 
 		// Convention: mining is only possible over faces, not over corners
 		// Mining is only possible, if standing:
-		// 		-> CASE 1: x+1/x-1 or z+1/z-1 with y-1/y
+		// 		-> CASE 1: x+1/x-1 or z+1/z-1 with y-2/y-1
 		//					-> Check if walkable and coords reachable
 		//					-> minable and reachable
-		//		-> CASE 2: x+1/x-1 or z+1/z-1 with y+1		
-		//					-> Check if voxel above is walkable (+2 instead of nonSolid) and coords walkable and reachable
+		//		-> CASE 2: x+1/x-1 or z+1/z-1 with y		
+		//					-> Check if voxel is walkable (+2 instead of nonSolid) and reachable
 		//					-> minable and reachable
-		//		-> CASE 3: x and z and y-2
+		//		-> CASE 3: x and z and y-3
 		//					-> Check if walkable and coords reachable
 		//					-> minable and reachable
 
 		let walkableNeighborsToReachCurrentSelectedVoxel = [];
-		yLoop: for(let y = -1; y <= 1; y++) {
+		yLoop: for(let y = -2; y <= 0; y++) {
 			// Check additional condition of CASE 2
-			if(y === 1) {
-				let voxelWalkabilityOfVoxelAboveSelected = this._voxelWalkablilityData.getVoxelWalkability([this._selectedCoords[index][0], this._selectedCoords[index][1] + y, this._selectedCoords[index][2]]);
-				if(voxelWalkabilityOfVoxelAboveSelected === 0) {
+			if(y === 0) {
+				let voxelWalkabilityOfSelectedVoxel = this._voxelWalkablilityData.getVoxelWalkability([this._selectedCoords[index][0], this._selectedCoords[index][1], this._selectedCoords[index][2]]);
+				if(voxelWalkabilityOfSelectedVoxel === 0) {
 					break yLoop;
 				}
 			}
@@ -140,7 +140,7 @@ class MiningSelection{
 		}
 
 		// Check condition for CASE 3:
-		let coordsTwoVoxelsBelowSelected = [this._selectedCoords[index][0], this._selectedCoords[index][1] - 2, this._selectedCoords[index][2]];
+		let coordsTwoVoxelsBelowSelected = [this._selectedCoords[index][0], this._selectedCoords[index][1] - 3, this._selectedCoords[index][2]];
 		if(this._voxelWalkablilityData.getVoxelWalkability(coordsTwoVoxelsBelowSelected) !== 0) {
 			walkableNeighborsToReachCurrentSelectedVoxel.push(coordsTwoVoxelsBelowSelected);				
 		}

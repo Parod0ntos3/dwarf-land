@@ -1,7 +1,7 @@
 class WorldManager {
 	constructor(scene, camera) {
 		this._voxelTypeData = new VoxelTypeData();
-		this._voxelWalkablilityData = new VoxelWalkabilityData(this._voxelTypeData);
+		this._voxelWalkablilityData = new VoxelWalkabilityData(scene, this._voxelTypeData);
 
 		this._chunkManager = undefined;
 
@@ -20,9 +20,10 @@ class WorldManager {
 
 	updateWorldData(coords, type) {
 		this._voxelTypeData.setVoxelType(coords, type);
-		for(let y = -1; y <= 1; y++) {
+		for(let y = -2; y <= 0; y++) {
 			this._voxelWalkablilityData.updateVoxelWalkability([coords[0], coords[1] + y, coords[2]]);
 		}
+		this._voxelWalkablilityData.updateVoxelWalkablilityVisualisation();
 	}
 
 	getVoxelType(coords) {

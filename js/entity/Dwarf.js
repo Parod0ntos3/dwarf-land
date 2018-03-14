@@ -6,7 +6,7 @@ class Dwarf {
 		this._movingDirection = [];
 		this._worldManager = worldManager;
 		this._position = [Math.floor(WORLD_SIZE.x / 2) + id, 0, Math.floor(WORLD_SIZE.z / 2) + id];
-		this._position[1] = worldManager.getHeight(this._position[0], this._position[2]);
+		this._position[1] = worldManager.getHeight(this._position[0], this._position[2]) - 1;
 
 		this.coords = [
 			Math.floor(this._position[0]),
@@ -143,7 +143,7 @@ class Dwarf {
 
 	_updateMesh() {
 		this._dwarfMesh.position.x = this._position[0];
-		this._dwarfMesh.position.y = this._position[1];
+		this._dwarfMesh.position.y = this._position[1] + 1;
 		this._dwarfMesh.position.z = this._position[2];		
 	}
 }

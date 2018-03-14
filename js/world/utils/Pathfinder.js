@@ -36,14 +36,14 @@ class Pathfinder {
 					// over neighbor.coords if walking down, otherwise entity would collide
 					if(y === 1) {
 						if(this._voxelTypesData.getVoxelType([currentNode.coords[0],
-												  currentNode.coords[1] + 2,
-												  currentNode.coords[2]]) !== VOXEL_TYPE.AIR) {
+															  currentNode.coords[1] + 2,
+															  currentNode.coords[2]]) !== VOXEL_TYPE.AIR) {
 							continue yLoop;
 						}
 					} else if(y === -1) {
 						if(this._voxelTypesData.getVoxelType([coords[0],
-												  coords[1] + 2,
-												  coords[2]]) !== VOXEL_TYPE.AIR) {
+															  coords[1] + 2,
+															  coords[2]]) !== VOXEL_TYPE.AIR) {
 							break yLoop;
 						}
 					}
