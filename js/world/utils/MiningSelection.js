@@ -106,17 +106,21 @@ class MiningSelection{
 		// Convention: mining is only possible over faces, not over corners
 		// Mining is only possible, if standing:
 		// 		-> CASE 1: x+1/x-1 or z+1/z-1 with y-2/y-1
-		//					-> Check if walkable and coords reachable
+		//					-> Check if walkable
 		//					-> minable and reachable
 		//		-> CASE 2: x+1/x-1 or z+1/z-1 with y		
-		//					-> Check if voxel is walkable (+2 instead of nonSolid) and reachable
+		//					-> Check if voxel is walkable (+2 instead of nonSolid)
 		//					-> minable and reachable
-		//		-> CASE 3: x and z and y-3
-		//					-> Check if walkable and coords reachable
+		//		-> CASE 3: x+1/x-1 or z+1/z-1 with y-3
+		//					-> Check if x+1/x-1 or z+1/z-1 with y is air
+		//					-> Check if walkable and coords rachable
+		//					-> minable and reachable
+		//		-> CASE 4: x and z and y-3
+		//					-> Check if walkable
 		//					-> minable and reachable
 
 		let walkableNeighborsToReachCurrentSelectedVoxel = [];
-		yLoop: for(let y = -2; y <= 0; y++) {
+		yLoop: for(let y = -3; y <= 0; y++) {
 			// Check additional condition of CASE 2
 			if(y === 0) {
 				let voxelWalkabilityOfSelectedVoxel = this._voxelWalkablilityData.getVoxelWalkability([this._selectedCoords[index][0], this._selectedCoords[index][1], this._selectedCoords[index][2]]);
@@ -124,9 +128,10 @@ class MiningSelection{
 					break yLoop;
 				}
 			}
-			// Loops for CASE 1 and CASE 2
-			let faceNeighbors = [{x: -1, z: 0}, {x: 0, z: -1}, {x: 1, z: 0}, {x: 0, z: 1}]
-			for(let j = 0; j < faceNeighbors.length; j++) {
+
+			// Loops for CASE 1, CASE 2 and CASE 3
+			let faceNeighbors = [{x: -1, z: 0}, {x: 0, z: -1}, {x: 1, z: 0}, {x: 0, z: 1}];
+			jLoop: for(let j = 0; j < faceNeighbors.length; j++) {
 				let coordsNextToSelected = [
 					this._selectedCoords[index][0] + faceNeighbors[j].x,
 					this._selectedCoords[index][1] + y,
@@ -134,16 +139,26 @@ class MiningSelection{
 				];
 
 				if(this._voxelWalkablilityData.getVoxelWalkability(coordsNextToSelected) !== 0) {
+					// Check additional condition for CASE 3:
+					if(y === -3) {
+						if(this._voxelTypesData.getVoxelType(
+							[	this._selectedCoords[index][0] + faceNeighbors[j].x,
+								this._selectedCoords[index][1],
+								this._selectedCoords[index][2] + faceNeighbors[j].z	]) !== VOXEL_TYPE.AIR) {
+							continue jLoop;							
+						}
+					}
+
 					walkableNeighborsToReachCurrentSelectedVoxel.push(coordsNextToSelected);
 				}
 			}
 		}
 
-		// Check condition for CASE 3:
+		// Check condition for CASE 4:
 		let coordsTwoVoxelsBelowSelected = [this._selectedCoords[index][0], this._selectedCoords[index][1] - 3, this._selectedCoords[index][2]];
 		if(this._voxelWalkablilityData.getVoxelWalkability(coordsTwoVoxelsBelowSelected) !== 0) {
 			walkableNeighborsToReachCurrentSelectedVoxel.push(coordsTwoVoxelsBelowSelected);				
-		}
+		}		
 
 		return walkableNeighborsToReachCurrentSelectedVoxel;
 	}

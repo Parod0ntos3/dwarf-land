@@ -13,9 +13,12 @@ class VoxelWalkabilityData {
 			}
 		}
 
-		this._scene = scene;
-		this.walkabilityPoints = {};
-		this._addWalkabilityToScene();
+		this._visualizeWalkability = false;
+		if(this._visualizeWalkability === true) {
+			this._scene = scene;
+			this.walkabilityPoints = {};
+			this._addWalkabilityToScene();
+		}
 
 	}
 
@@ -67,8 +70,10 @@ class VoxelWalkabilityData {
 	}
 
 	updateVoxelWalkablilityVisualisation() {
-		this._scene.remove(this.walkabilityPoints);
-		this._addWalkabilityToScene();
+		if(this._visualizeWalkability === true) {
+			this._scene.remove(this.walkabilityPoints);
+			this._addWalkabilityToScene();
+		}
 	}
 
 	// Private methods:

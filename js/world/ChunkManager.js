@@ -112,7 +112,7 @@ class ChunkManager {
 
 	_updateDrawRangeOfChunkMeshes() {
 		for(let i = 0; i < this._chunkMeshes.length; i++) {
-			this._chunkMeshes[i].geometry.setDrawRange(0, this._chunks[i].getIndexCountPerLayer()[this._indexOfCurrentLayer]);
+			this._chunkMeshes[i].geometry.setDrawRange(0, this._chunks[i].getIndexCountPerLayerByIndex(this._indexOfCurrentLayer));
 			this._slicedLayerMeshes[i].geometry.setDrawRange(this._chunks[i].getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).start,
 												 			this._chunks[i].getSlicedLayerDrawRangeByIndex(this._indexOfCurrentLayer).count);
 		}
