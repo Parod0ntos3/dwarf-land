@@ -1,21 +1,21 @@
 class Dwarf {
 	constructor(scene, worldManager, id) {
-		this.id = id;
+		this._id = id;
 
 		// Variables for moving
-		this.movingDirection = [];
-		this.worldManager = worldManager;
-		this.position = [Math.floor(WORLD_SIZE.x / 2) + id, 0, Math.floor(WORLD_SIZE.z / 2) + id];
-		this.position[1] = worldManager.getHeight(this.position[0], this.position[2]);
+		this._movingDirection = [];
+		this._worldManager = worldManager;
+		this._position = [Math.floor(WORLD_SIZE.x / 2) + id, 0, Math.floor(WORLD_SIZE.z / 2) + id];
+		this._position[1] = worldManager.getHeight(this._position[0], this._position[2]);
 
 		this.coords = [
-			Math.floor(this.position[0]),
-			Math.floor(this.position[1]),
-			Math.floor(this.position[2]),
+			Math.floor(this._position[0]),
+			Math.floor(this._position[1]),
+			Math.floor(this._position[2]),
 		];
 
-		this.path = [];
-		this.miningCoords = [];
+		this._path = [];
+		this._miningCoords = [];
 
 		// Initialize mesh
 		let dwarfGeometry = new THREE.BoxGeometry( 1, 1, 1 );
@@ -24,39 +24,39 @@ class Dwarf {
 		let b = Math.floor(Math.random() * 255);
 		let color = "rgb(" + r.toString() + "," +  g.toString() + "," + b.toString() + ")";
 		let dwarfMaterial = new THREE.MeshBasicMaterial( {color: color} );
-		this.dwarfMesh = new THREE.Mesh( dwarfGeometry, dwarfMaterial );
-		scene.add( this.dwarfMesh );
+		this._dwarfMesh = new THREE.Mesh( dwarfGeometry, dwarfMaterial );
+		scene.add( this._dwarfMesh );
 
 		// Set start position
 		this._updateMesh();
 
 		// FSM and States:
-		this.FSM = new FSM();
-		this.FSMStateWaiting = new FSMStateWaiting(this);
-		this.FSMStateMovingToTarget = new FSMStateMovingToTarget(this);
-		this.FSMStateMining = new FSMStateMining(this);
+		this._FSM = new FSM();
+		this._FSMStateWaiting = new FSMStateWaiting(this, worldManager);
+		this._FSMStateMovingToTarget = new FSMStateMovingToTarget(this, worldManager);
+		this._FSMStateMining = new FSMStateMining(this, worldManager);
 
-		this.FSM.pushState(this.FSMStateWaiting);
-		this.job = undefined;
+		this._FSM.pushState(this._FSMStateWaiting);
+		this._job = undefined;
 	}
 
 	// Public methods:
 
 	update() {
-		if(this.path.length > 0 && this.FSM.getCurrentStateName() !== "MOVING_TO_TARGET_STATE") {
-			this.FSM.pushState(this.FSMStateMovingToTarget);
+		if(this._path.length > 0 && this._FSM.getCurrentStateName() !== "MOVING_TO_TARGET_STATE") {
+			this._FSM.pushState(this._FSMStateMovingToTarget);
 		}
-		this.FSM.update();
+		this._FSM.update();
 
 		this._updateMesh();
 	}
 
 	getId() {
-		return this.id;
+		return this._id;
 	}
 
 	getPosition() {
-		return this.position;
+		return this._position;
 	}
 
 	getCoords() {
@@ -70,30 +70,80 @@ class Dwarf {
 	}
 
 	getCurrentJob() {
-		return this.job;
+		return this._job;
 	}
 
 	setCurrentJob(job) {
-		this.job = job;
-		if(this.job !== undefined) {
-			if(this.job.title === "MINING_JOB" && this.job.path !== undefined) {
-				this.miningCoords = this.job.miningCoords;
-				this.path = this.job.path;
-				this.FSM.pushState(this.FSMStateMining);
-				this.FSM.pushState(this.FSMStateMovingToTarget);
+		this._job = job;
+		if(this._job !== undefined) {
+			if(this._job.title === "MINING_JOB" && this._job.path !== undefined) {
+				this._miningCoords = this._job.miningCoords;
+				this._path = this._job.path;
+				this._FSM.pushState(this._FSMStateMining);
+				this._FSM.pushState(this._FSMStateMovingToTarget);
 			} else {
-				this.job = undefined;
+				this._job = undefined;
 			}
 		} else {
-			this.job = undefined;
+			this._job = undefined;
 		}
+	}
+
+	getFSM() {
+		return this._FSM;
+	}
+
+	// Public methods for mining state:
+
+	getMiningCoordsByIndex(index) {
+		return this._miningCoords[index];
+	}
+
+	getNumberOfMiningCoords() {
+		return this._miningCoords.length;
+	}
+
+	removeMiningCoordsAtIndex(index) {
+		this._miningCoords.splice(index, 1);		
+	}
+
+	// Public methods for moving state:
+
+	getPathLength() {
+		return this._path.length;
+	}
+
+	getPathCoordsByIndex(index) {
+		return this._path[index];
+	}
+
+	removeCoordsFromPathAtIndex(index) {
+		this._path.splice(index, 1);		
+	}
+
+	setPath(path) {
+		this._path = path;
+	}
+
+	setPosition(position) {
+		this._position[0] = position[0];
+		this._position[1] = position[1];
+		this._position[2] = position[2];
+	}
+
+	getMovingDirection() {
+		return this._movingDirection;
+	}
+
+	setMovingDirection(movingDirection) {
+		this._movingDirection = movingDirection;
 	}
 
 	// Private methods:
 
 	_updateMesh() {
-		this.dwarfMesh.position.x = this.position[0];
-		this.dwarfMesh.position.y = this.position[1];
-		this.dwarfMesh.position.z = this.position[2];		
+		this._dwarfMesh.position.x = this._position[0];
+		this._dwarfMesh.position.y = this._position[1];
+		this._dwarfMesh.position.z = this._position[2];		
 	}
 }

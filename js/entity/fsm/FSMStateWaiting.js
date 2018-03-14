@@ -1,7 +1,8 @@
 class FSMStateWaiting extends FSMState {
-	constructor(dwarf) {
+	constructor(dwarf, worldManager) {
 		super("WAITING_STATE");
 		this._dwarf = dwarf;
+		this._worldManager = worldManager;
 	}
 
 	// Public methods:
