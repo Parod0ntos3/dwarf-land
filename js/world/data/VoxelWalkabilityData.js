@@ -2,8 +2,8 @@ class VoxelWalkabilityData {
 	constructor(scene, voxelTypeData) {
 		this._voxelTypeData = voxelTypeData;
 
-		let voxelWalkabilitiesBuffer = new ArrayBuffer(NUMBER_OF_VOXELS_IN_WORLD);
-		this._voxelWalkablilities = new Uint8Array(voxelWalkabilitiesBuffer);
+		let voxelWalkabilitiesBuffer = new ArrayBuffer(NUMBER_OF_VOXELS_IN_WORLD * 2);
+		this._voxelWalkablilities = new Int16Array(voxelWalkabilitiesBuffer);
 		this._initializeVoxelWalkabilities();
 
 		let counter = 0;
@@ -12,14 +12,15 @@ class VoxelWalkabilityData {
 				counter++;
 			}
 		}
+		console.log(counter);
 
-		this._visualizeWalkability = false;
+
+		this._visualizeWalkability = true;
 		if(this._visualizeWalkability === true) {
 			this._scene = scene;
 			this.walkabilityPoints = {};
 			this._addWalkabilityToScene();
 		}
-
 	}
 
 	// Public methods:
@@ -95,6 +96,118 @@ class VoxelWalkabilityData {
 				}
 			}
 		}
+
+		// Algorithm:
+		// Iterate through voxels, if walkable (=== 1):
+		//	-> Set voxel walkability to clusterIndex
+		//	-> Get indices of all reachable walkable neighbors and set their walkability to clusterIndex
+		//	-> Get all reachable walkable neighbors of the neighbors and set their walkability to clusterIndex
+		//	-> ...
+		//	-> Increase clusterIndex 
+
+		let clusterIndex = 2;
+		for(let x = 0; x < WORLD_SIZE.x; x++) {
+			for(let z = 0; z < WORLD_SIZE.z; z++) {
+				for(let y = 0; y < WORLD_SIZE.y; y++) {
+					let index = this._getIndexFromCoords([x,y,z]);
+					if(this._voxelWalkablilities[index] === 1) {
+						this._voxelWalkablilities[index] = clusterIndex;
+
+						// Find all walkable reachable neighbors and set their walkability to clusterIndex
+						let reachableWalkableVoxelCoordsWithoutCluster = this._getReachableWalkableNeighborVoxelCoordsWithoutCluster([x,y,z]);
+						let indicesCount = reachableWalkableVoxelCoordsWithoutCluster.length;
+
+						let count = indicesCount;
+						while(indicesCount > 0) {
+							let temporaryIndices = [];
+							for(let i = 0; i < indicesCount; i++) {
+								index = this._getIndexFromCoords(reachableWalkableVoxelCoordsWithoutCluster[i]);
+								this._voxelWalkablilities[index] = clusterIndex;
+								temporaryIndices.push(this._getReachableWalkableNeighborVoxelCoordsWithoutCluster(reachableWalkableVoxelCoordsWithoutCluster[i]));
+							}
+
+							reachableWalkableVoxelCoordsWithoutCluster = [];
+
+							for(let i = 0; i < temporaryIndices.length; i++) {
+								for(let j = 0; j < temporaryIndices[i].length; j++) {
+									reachableWalkableVoxelCoordsWithoutCluster.push(temporaryIndices[i][j]);
+								}
+							}
+
+							indicesCount = reachableWalkableVoxelCoordsWithoutCluster.length;
+							count += indicesCount;
+						}
+						clusterIndex++;
+						if(count > 10)
+							console.log("clusterCount: " + count);
+					}
+				}
+			}
+		}
+		console.log(clusterIndex);
+	}
+
+	_getReachableWalkableNeighborVoxelCoordsWithoutCluster(coords) {
+		let reachableWalkableNeighborVoxelCoordsWithoutCluster = [];
+
+		let neighborCoords = [
+			[coords[0] + 1, coords[1], coords[2]],
+			[coords[0], coords[1], coords[2] + 1],
+			[coords[0] - 1, coords[1], coords[2]],
+			[coords[0], coords[1], coords[2] - 1]
+		];
+
+		// Check boundaries for x and z -> remove coords from neighborCoords if necessary
+		if(coords[0] === 0) {
+			neighborCoords.splice(2,1);
+		} else if(coords[0] === WORLD_SIZE.x - 1) {
+			neighborCoords.splice(0,1);
+		}
+
+		if(coords[2] === 0) {
+			neighborCoords.splice(3,1);
+		} else if(coords[2] === WORLD_SIZE.z - 1) {
+			neighborCoords.splice(1,1);			
+		}
+
+		// Check boundaries for y -> restrict yLoop if necessary
+		let yMin = -1;
+		let yMax = 1;
+		if(coords[1] === 0) {
+			yMin = 0;
+		} else if(coords[1] === WORLD_SIZE.y - 1) {
+			yMax = 0;
+		}
+
+		neighborCoordsLoop: for(let i = 0; i < neighborCoords.length; i++) {
+			yLoop: for(let y = yMax; y >= yMin; y--) {
+				let currentCoords = [neighborCoords[i][0], neighborCoords[i][1] + y, neighborCoords[i][2]];
+
+				// Check if there is air over coords if walking up or 
+				// over neighbor.coords if walking down, otherwise entity would collide
+				if(y === 1) {
+					if(this._voxelTypeData.getVoxelType([ coords[0],
+														  coords[1] + 2,
+														  coords[2]]) !== VOXEL_TYPE.AIR) {
+						continue yLoop;
+					}
+				} else if(y === -1) {
+					if(this._voxelTypeData.getVoxelType([ currentCoords[0],
+														  currentCoords[1] + 2,
+														  currentCoords[2]]) !== VOXEL_TYPE.AIR) {
+						break yLoop;
+					}
+				}
+
+				let index = this._getIndexFromCoords(currentCoords);
+				if(this._voxelWalkablilities[index] === 1) {
+					this._voxelWalkablilities[index] = 0;
+					reachableWalkableNeighborVoxelCoordsWithoutCluster.push(currentCoords);
+					break yLoop;
+				}
+			}
+		}
+		return reachableWalkableNeighborVoxelCoordsWithoutCluster;
 	}
 
 	_addWalkabilityToScene() {
@@ -103,7 +216,7 @@ class VoxelWalkabilityData {
 		for(let x = 0; x < WORLD_SIZE.x; x++) {
 			for(let z = 0; z < WORLD_SIZE.z; z++) {
 				for(let y = 0; y < WORLD_SIZE.y; y++) {
-					if(this.getVoxelWalkability([x,y,z]) === 1) {
+					if(this.getVoxelWalkability([x,y,z]) !== 0) {
 						let point = new THREE.Vector3();
 						point.x = x;
 						point.y = y + 0.5;

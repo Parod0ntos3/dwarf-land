@@ -7,6 +7,14 @@ class Pathfinder {
 	// Public methods:
 
 	getPath(startCoords, endCoords) {
+		if( this._voxelWalkablilityData.getVoxelWalkability(startCoords) !== 
+			this._voxelWalkablilityData.getVoxelWalkability(endCoords)) {
+			console.log(this._voxelWalkablilityData.getVoxelWalkability(startCoords) + " " + 
+						this._voxelWalkablilityData.getVoxelWalkability(endCoords));
+			return undefined;
+		}
+
+
 		let closedSet = [];
 		let openSet = [];
 
@@ -14,9 +22,9 @@ class Pathfinder {
 							parentNode: null, 
 							costs: this._getManhattenDistance(startCoords, endCoords) };
 		openSet.push(currentNode);
-		this._voxelWalkablilityData.setVoxelWalkability(startCoords, 0);
+		let voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(startCoords);
+		this._voxelWalkablilityData.setVoxelWalkability(startCoords, -voxelWalkablility);
 
-		let iterations = 0;
 		while ( currentNode.coords[0] !== endCoords[0] || 
 				currentNode.coords[1] !== endCoords[1] || 
 				currentNode.coords[2] !== endCoords[2]) {
@@ -48,14 +56,15 @@ class Pathfinder {
 						}
 					}
 					
-					if(this._voxelWalkablilityData.getVoxelWalkability(coords) === 1) {
+					voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(coords);
+					if(voxelWalkablility > 0) {
 						// Calculate f = g + h, where g are the costs from the start to
 						// the current field and h are the estimated costs to the target
 						let fCosts = this._getManhattenDistance(startCoords, coords)
 									 + this._getManhattenDistance(endCoords, coords);
 						openSet.push({coords: coords, parentNode: currentNode, costs: fCosts});
 
-						this._voxelWalkablilityData.setVoxelWalkability(coords, 0);
+						this._voxelWalkablilityData.setVoxelWalkability(coords, -voxelWalkablility);
 
 						break yLoop;
 					}
@@ -81,18 +90,18 @@ class Pathfinder {
 				// Stop if openSet.length === 0
 				break;
 			}
-
-			if(iterations++ > 1000)
-				break;
 		}
 
 		// Reset walkability in voxelWalkabliltyData
-		this._voxelWalkablilityData.setVoxelWalkability(currentNode.coords, 1);
+		voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(currentNode.coords);
+		this._voxelWalkablilityData.setVoxelWalkability(currentNode.coords, -voxelWalkablility);
 		for(let i = 0; i < openSet.length; i++) {
-			this._voxelWalkablilityData.setVoxelWalkability(openSet[i].coords, 1);
+			voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(openSet[i].coords);
+			this._voxelWalkablilityData.setVoxelWalkability(openSet[i].coords, -voxelWalkablility);
 		}
 		for(let i = 0; i < closedSet.length; i++) {
-			this._voxelWalkablilityData.setVoxelWalkability(closedSet[i].coords, 1);
+			voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(closedSet[i].coords);
+			this._voxelWalkablilityData.setVoxelWalkability(closedSet[i].coords, -voxelWalkablility);
 		}
 
 		// Get path from currentNode, which is the endNode

@@ -2,7 +2,7 @@ class DwarfManager {
 	constructor(scene, worldManager) {
 		this._worldManager = worldManager;
 		this._dwarfs = [];
-		for(let i = 0; i < 2; i++) {
+		for(let i = 0; i < 1; i++) {
 			this._dwarfs[i] = new Dwarf(scene, worldManager, i);
 		}
  	}
