@@ -20,9 +20,13 @@ class WorldManager {
 
 	updateWorldData(coords, type) {
 		this._voxelTypeData.setVoxelType(coords, type);
+
+		let voxelWalkabilityCoordsToUpdate = [];
 		for(let y = -2; y <= 0; y++) {
-			this._voxelWalkablilityData.updateVoxelWalkability([coords[0], coords[1] + y, coords[2]]);
+			voxelWalkabilityCoordsToUpdate.push([coords[0], coords[1] + y, coords[2]]);
 		}
+		this._voxelWalkablilityData.updateVoxelWalkabilities(voxelWalkabilityCoordsToUpdate);
+
 		this._voxelWalkablilityData.updateVoxelWalkablilityVisualisation();
 	}
 
