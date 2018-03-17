@@ -60,7 +60,7 @@ scene.add(sandPlaneMesh);
 // Load the texture asynchronously
 var chunkManagerTexture;
 var textureIsLoading = true;
-var textureLoader = new THREE.TextureLoader();
+/*var textureLoader = new THREE.TextureLoader();
 textureLoader.load('./res/cubes.png', function (texture){
 	console.log('texture loaded');
 	texture.flipY = false;
@@ -68,7 +68,8 @@ textureLoader.load('./res/cubes.png', function (texture){
 	chunkManagerTexture = texture;
 }, undefined, function (err) {
 	console.error('texture not loaded', err)
-});
+});*/
+textureIsLoading = false;
 
 // Initialize a dwarf
 var dwarfManager = new DwarfManager(scene, worldManager);

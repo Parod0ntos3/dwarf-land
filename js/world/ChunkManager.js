@@ -7,7 +7,9 @@ class ChunkManager {
 
 		this._chunkMeshes = [];
 		this._slicedLayerMeshes = [];
-		this._chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
+		//this._chunkMaterial = new THREE.MeshLambertMaterial( {map: texture} );
+		this._chunkMaterial = new THREE.MeshLambertMaterial( {color: "rgb(200,100,0)"} );
+
 		this._slicedLayerMaterial = new THREE.MeshLambertMaterial( {color: "rgb(75,75,75)"} );
 
 		this._indexOfCurrentLayer = WORLD_SIZE.y - 1;

@@ -19,15 +19,12 @@ class WorldManager {
 	}
 
 	updateWorldData(coords, type) {
+		// TODO: SAVE WALKABLE NEIGHBORS!
+		/*
 		this._voxelTypeData.setVoxelType(coords, type);
-
-		let voxelWalkabilityCoordsToUpdate = [];
-		for(let y = -2; y <= 0; y++) {
-			voxelWalkabilityCoordsToUpdate.push([coords[0], coords[1] + y, coords[2]]);
-		}
-		this._voxelWalkablilityData.updateVoxelWalkabilities(voxelWalkabilityCoordsToUpdate);
-
+		this._voxelWalkablilityData.updateVoxelWalkability(coords);
 		this._voxelWalkablilityData.updateVoxelWalkablilityVisualisation();
+		*/
 	}
 
 	getVoxelType(coords) {

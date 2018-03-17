@@ -6,17 +6,22 @@ class VoxelWalkabilityData {
 		this.VOXEL_INITIAL_WALKABLE = 1;
 		this.INITIAL_VOXEL_CLUSTER_INDEX = 2;
 
+		this._clusterSizes = [];
+		this._availableClusterIndices = [];
+		this._highestClusterIndex = this.INITIAL_VOXEL_CLUSTER_INDEX;
+
 		let voxelWalkabilitiesBuffer = new ArrayBuffer(NUMBER_OF_VOXELS_IN_WORLD * 2);
 		this._voxelWalkablilities = new Int16Array(voxelWalkabilitiesBuffer);
 		this._initializeVoxelWalkabilities();
 
 		let counter = 0;
 		for(let i = 0; i < this._voxelWalkablilities.length; i++) {
-			if(this._voxelWalkablilities[i] !== 0) {
+			if(this._voxelWalkablilities[i] !== this.VOXEL_NOT_WALKABLE) {
 				counter++;
 			}
 		}
-		console.log(counter);
+		console.log("numberOfWalkableVoxels: " + counter);
+		console.log("clusterSizes: " + this._clusterSizes);
 
 
 		this._visualizeWalkability = true;
@@ -30,15 +35,20 @@ class VoxelWalkabilityData {
 	// Public methods:
 
 	getVoxelWalkability(coords) {
-		return this._voxelWalkablilities[this._getIndexFromCoords(coord)];
+		return this._voxelWalkablilities[this._getIndexFromCoords(coords)];
 	}
 
 	setVoxelWalkability(coords, walkability) {
-		// Function is used in pathfinder to temporarly set walkability to 0.
+		// Function is used in pathfinder to temporarly set walkability to - walkability.
 		this._voxelWalkablilities[this._getIndexFromCoords(coords)] = walkability;
 	}
 
-	updateVoxelWalkabilities(coordsList) {
+	updateVoxelWalkability(coords) {
+		let coordsList = [];
+		for(let y = -2; y <= 0; y++) {
+			coordsList.push([coords[0], coords[1] + y, coords[2]]);
+		}
+
 		let startCoordsForSplitting = [];
 
 		iLoop: for(let i = 0; i < coordsList.length; i++) {
@@ -57,7 +67,7 @@ class VoxelWalkabilityData {
 				let reachableNeighborsWalkabilities = this._getReachableWalkableNeighborWalkabilities(coordsList[i]);
 
 				if(reachableNeighborsWalkabilities.length === 0) {
-					this._voxelWalkablilities[index] = this._getNextClusterIndex();
+					this._voxelWalkablilities[index] = this._getIndexForNewCluster();
 					continue iLoop;
 				}
 
@@ -76,7 +86,7 @@ class VoxelWalkabilityData {
 				}
 			} else {
 				// CASE 4:
-				let reachableWalkableNeighborCoords = this._getReachableWalkableNeighborCoords(coordsList[i]);
+				let reachableWalkableNeighborCoords = this._getReachableWalkableNeighborCoordsWithClusterIndex(coordsList[i]);
 
 				if(reachableNeighborsWalkabilities.length < 2) {
 					continue iLoop;
@@ -97,8 +107,9 @@ class VoxelWalkabilityData {
 
 		for(let i = 0; i < startCoordsForSplitting.length; i++) {
 			for(let j = 0; j < startCoordsForSplitting.length; j++) {
-				if(areCoordsEqual(startCoordsForSplitting[i], startCoordsForSplitting[j]))
+				if(areCoordsEqual(startCoordsForSplitting[i], startCoordsForSplitting[j])) {
 					// REMOVE FROM LIST!!
+				}
 			}
 		}
 		// Cases:
@@ -200,7 +211,8 @@ class VoxelWalkabilityData {
 		//	-> ...
 		//	-> Increase clusterIndex 
 
-		let clusterIndex = this.INITIAL_VOXEL_CLUSTER_INDEX;
+		let clusterIndex = this._getIndexForNewCluster();
+		console.log("Index: " + clusterIndex);
 		for(let x = 0; x < WORLD_SIZE.x; x++) {
 			for(let z = 0; z < WORLD_SIZE.z; z++) {
 				for(let y = 0; y < WORLD_SIZE.y; y++) {
@@ -209,16 +221,21 @@ class VoxelWalkabilityData {
 						this._voxelWalkablilities[index] = clusterIndex;
 
 						// Find all walkable reachable neighbors and set their walkability to clusterIndex
-						let reachableWalkableVoxelCoordsWithoutCluster = this._getReachableWalkableNeighborVoxelCoordsWithoutCluster([x,y,z]);
+						let reachableWalkableVoxelCoordsWithoutCluster = this._getReachableWalkableNeighborCoordsWithClusterIndex([x,y,z], this.VOXEL_INITIAL_WALKABLE);
 						let indicesCount = reachableWalkableVoxelCoordsWithoutCluster.length;
+						for( let i = 0; i < indicesCount; i++) {
+							this.setVoxelWalkability(reachableWalkableVoxelCoordsWithoutCluster[i], clusterIndex);
+						}
 
-						let count = indicesCount;
+						let numberOfVoxelsInCluster = 1 + indicesCount;
 						while(indicesCount > 0) {
 							let temporaryIndices = [];
 							for(let i = 0; i < indicesCount; i++) {
-								index = this._getIndexFromCoords(reachableWalkableVoxelCoordsWithoutCluster[i]);
-								this._voxelWalkablilities[index] = clusterIndex;
-								temporaryIndices.push(this._getReachableWalkableNeighborVoxelCoordsWithoutCluster(reachableWalkableVoxelCoordsWithoutCluster[i]));
+								let reachableWalkableNeighborsWithoutCluster = this._getReachableWalkableNeighborCoordsWithClusterIndex(reachableWalkableVoxelCoordsWithoutCluster[i], this.VOXEL_INITIAL_WALKABLE);
+								for( let i = 0; i < reachableWalkableNeighborsWithoutCluster.length; i++) {
+									this.setVoxelWalkability(reachableWalkableNeighborsWithoutCluster[i], clusterIndex);
+								}
+								temporaryIndices.push(reachableWalkableNeighborsWithoutCluster);
 							}
 
 							reachableWalkableVoxelCoordsWithoutCluster = [];
@@ -230,11 +247,10 @@ class VoxelWalkabilityData {
 							}
 
 							indicesCount = reachableWalkableVoxelCoordsWithoutCluster.length;
-							count += indicesCount;
+							numberOfVoxelsInCluster += indicesCount;
 						}
-						clusterIndex++;
-						if(count > 10)
-							console.log("clusterCount: " + count);
+						this._addCluster(clusterIndex, numberOfVoxelsInCluster);
+						clusterIndex = this._getIndexForNewCluster();
 					}
 				}
 			}
@@ -242,7 +258,11 @@ class VoxelWalkabilityData {
 		console.log("numberOfClusters: " + clusterIndex);
 	}
 
-	_getReachableWalkableNeighborVoxelCoordsWithoutCluster(coords) {
+	/*	Functiion returns the reachable walkable neighbors of a voxel:
+		-> If clusterIndex is set, it only returns the neighbors with the specific clusterIndex
+		-> If clusterIndex is not set, it returns all walkable neighbors
+	*/
+	_getReachableWalkableNeighborCoordsWithClusterIndex(coords, clusterIndex) {
 		let reachableWalkableNeighborVoxelCoordsWithoutCluster = [];
 
 		let neighborCoords = [
@@ -295,11 +315,17 @@ class VoxelWalkabilityData {
 				}
 
 				let index = this._getIndexFromCoords(currentCoords);
-				if(this._voxelWalkablilities[index] === this.VOXEL_INITIAL_WALKABLE) {
-					// set walkability temporary to 0 to avoid dublicates in list
-					this._voxelWalkablilities[index] = 0;
-					reachableWalkableNeighborVoxelCoordsWithoutCluster.push(currentCoords);
-					break yLoop;
+
+				if(clusterIndex === undefined) {
+					if(this._voxelWalkablilities[index] > this.VOXEL_NOT_WALKABLE) {
+						reachableWalkableNeighborVoxelCoordsWithoutCluster.push(currentCoords);
+						break yLoop;
+					}
+				} else {
+					if(this._voxelWalkablilities[index] === clusterIndex) {
+						reachableWalkableNeighborVoxelCoordsWithoutCluster.push(currentCoords);
+						break yLoop;
+					}
 				}
 			}
 		}
@@ -312,7 +338,7 @@ class VoxelWalkabilityData {
 		for(let x = 0; x < WORLD_SIZE.x; x++) {
 			for(let z = 0; z < WORLD_SIZE.z; z++) {
 				for(let y = 0; y < WORLD_SIZE.y; y++) {
-					if(this.getVoxelWalkability([x,y,z]) !== 0) {
+					if(this.getVoxelWalkability([x,y,z]) !== this.VOXEL_NOT_WALKABLE) {
 						let point = new THREE.Vector3();
 						point.x = x;
 						point.y = y + 0.5;
@@ -328,6 +354,35 @@ class VoxelWalkabilityData {
 		this.walkabilityPoints = new THREE.Points( walkabilityGeometry, walkabilityMaterial );
 
 		this._scene.add( this.walkabilityPoints );
+	}
+
+	// Functions for managing the walkability-clusters:
+
+	_getIndexForNewCluster() {
+		if(this._availableClusterIndices.length === 0) {
+			this._highestClusterIndex++;
+			// Check if number of clusters is lower than Int16Array restriction:
+			if(this._highestClusterIndex > 32767) {
+				console.log("Reached maximum amount of clusters (restricted by Int16Array)");
+			}
+			return (this._highestClusterIndex - 1);
+		} else {
+			let availableClusterIndex = this._availableClusterIndices[0];
+			this._availableClusterIndices.splice(0, 1);
+			return availableClusterIndex;
+		}
+	}
+
+	_removeCluster(clusterIndex) {
+		this._availableClusterIndices.push(clusterIndex);
+		this._clusterSizes[clusterIndex] = 0;
+	}
+
+	_addCluster(clusterIndex, numberOfVoxels) {
+		while(clusterIndex + 1 > this._clusterSizes.length) {
+			this._clusterSizes.push(0);
+		}
+		this._clusterSizes[clusterIndex] = numberOfVoxels;
 	}
 
 }

@@ -7,7 +7,7 @@ const VOXEL_TYPE = {
 const WATER_SURFACE_HEIGHT = 8;
 
 const CHUNK_SIZE = {x: 16, y: 96, z: 16};
-const NUMBER_OF_CHUNKS = {x: 16, y: 1, z: 16};
+const NUMBER_OF_CHUNKS = {x: 2, y: 1, z: 2};
 
 const WORLD_SIZE = {x: CHUNK_SIZE.x * NUMBER_OF_CHUNKS.x,
 					y: CHUNK_SIZE.y * NUMBER_OF_CHUNKS.y,

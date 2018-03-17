@@ -97,11 +97,15 @@ class Pathfinder {
 		this._voxelWalkablilityData.setVoxelWalkability(currentNode.coords, -voxelWalkablility);
 		for(let i = 0; i < openSet.length; i++) {
 			voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(openSet[i].coords);
-			this._voxelWalkablilityData.setVoxelWalkability(openSet[i].coords, -voxelWalkablility);
+			if(voxelWalkablility < 0) {
+				this._voxelWalkablilityData.setVoxelWalkability(openSet[i].coords, -voxelWalkablility);
+			}
 		}
 		for(let i = 0; i < closedSet.length; i++) {
 			voxelWalkablility = this._voxelWalkablilityData.getVoxelWalkability(closedSet[i].coords);
-			this._voxelWalkablilityData.setVoxelWalkability(closedSet[i].coords, -voxelWalkablility);
+			if(voxelWalkablility < 0) {
+				this._voxelWalkablilityData.setVoxelWalkability(closedSet[i].coords, -voxelWalkablility);
+			}
 		}
 
 		// Get path from currentNode, which is the endNode
