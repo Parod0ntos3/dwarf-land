@@ -19,12 +19,23 @@ class WorldManager {
 	}
 
 	updateWorldData(coords, type) {
-		// TODO: SAVE WALKABLE NEIGHBORS!
-		/*
+		let coordsForUpdatingWalkability = [];
+		let walkableReachableNeighborCoordsBeforeUpdatingVoxelType = [];
+		for(let y = -2; y <= 0; y++) {
+			if(coords[1] + y >= 0) {
+				coordsForUpdatingWalkability.push([coords[0], coords[1] + y, coords[2]]);
+				walkableReachableNeighborCoordsBeforeUpdatingVoxelType.push(
+					this._voxelWalkablilityData.getReachableWalkableNeighborCoordsWithClusterIndices(
+					[coords[0], coords[1] + y, coords[2]])
+				);
+			}
+		}
+
 		this._voxelTypeData.setVoxelType(coords, type);
-		this._voxelWalkablilityData.updateVoxelWalkability(coords);
+		this._voxelWalkablilityData.updateVoxelWalkability(	coordsForUpdatingWalkability,
+															walkableReachableNeighborCoordsBeforeUpdatingVoxelType);
 		this._voxelWalkablilityData.updateVoxelWalkablilityVisualisation();
-		*/
+		
 	}
 
 	getVoxelType(coords) {
