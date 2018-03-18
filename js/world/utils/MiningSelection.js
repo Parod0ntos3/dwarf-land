@@ -21,7 +21,14 @@ class MiningSelection{
 				this._updateAllWalkableCoordsToReachSelectedCoords();
 				this._updateRenderMesh();
 			}
-		} 
+		}
+
+		if(mousePicker.getSelectedVoxelCoords() !== undefined) {
+			let clusterIndex = this._voxelWalkablilityData.getVoxelWalkability(mousePicker.getSelectedVoxelCoords());
+			console.log("ClusterIndex: " + clusterIndex
+				+ " ClusterSize: " + this._voxelWalkablilityData._clusterSizes[clusterIndex]
+				);
+		}
 	}
 
 	getMiningSelectionData() {

@@ -57,7 +57,7 @@ class VoxelWalkabilityData {
 		//				# different walkabilities: -> merge clusters
 		//	- CASE 4: voxel was walkable and is now not walkable:
 		//		-> find reachable walkable neighbors
-		//			+ number of walkable neighbors < 2 -> nothing happens
+		//			+ number of walkable neighbors <= 1 -> nothing happens
 		//			+ number of walkable neighbors > 1:
 		//				# all neighbors with same walkability have to proof, that there is a way from one neighbors to the other one
 		//					-> find a path from every neighbor with same walkability to other neighbor
@@ -68,7 +68,7 @@ class VoxelWalkabilityData {
 		let clustersNeedToBeMerged = false;
 		let startCoodsForMergingAlgorithm = undefined;
 
-		let coordsIndexForSplittingAlgorithm = undefined;
+		let coordsListIndexForSplittingAlgorithm = undefined;
 
 		iLoop: for(let i = 0; i < coordsList.length; i++) {
 			let index = this._getIndexFromCoords(coordsList[i]);
@@ -84,12 +84,9 @@ class VoxelWalkabilityData {
 			} else if(oldWalkability === this.VOXEL_NOT_WALKABLE && this._voxelWalkablilities[index] !== this.VOXEL_NOT_WALKABLE) {
 				// CASE 3: set walkability and check if clusters need to be merged dependend from neighbor walkabilities
 				startCoodsForMergingAlgorithm = this.getReachableWalkableNeighborCoordsWithClusterIndices(coordsList[i]);
-				console.log("START_COORDS_FOR_MERGING:");
-				console.log(startCoodsForMergingAlgorithm);
 
 				if(startCoodsForMergingAlgorithm.length === 0) {
 					// Create a new cluster:
-					console.log("CREATE_NEW_CLUSTER:");
 					let clusterIndex = this._getIndexForNewCluster();
 					this._voxelWalkablilities[index] = clusterIndex;
 					this._addCluster(clusterIndex, 1);
@@ -108,23 +105,23 @@ class VoxelWalkabilityData {
 				this._clusterSizes[defaultWalkability] += 1;
 			} else {
 				// CASE 4:
+				this._clusterSizes[oldWalkability] -= 1;
 				if(walkableReachableNeighborCoordsBeforeUpdating[i].length <= 1) {
 					continue iLoop;
 				} else {
-					coordsIndexForSplittingAlgorithm = i;
+					coordsListIndexForSplittingAlgorithm = i;
 				}
 			}
 		}
 
 		// Merge clusters if necessary:
 		if(clustersNeedToBeMerged === true) {
-			console.log("Merge Clusters: " + startCoodsForMergingAlgorithm);
 			this._mergeClusters(startCoodsForMergingAlgorithm);
 		}
 
 		// Split clusters if necessary:
-		if(coordsIndexForSplittingAlgorithm !== undefined) {
-			this._splitCluster();
+		if(coordsListIndexForSplittingAlgorithm !== undefined) {
+			this._splitCluster(walkableReachableNeighborCoordsBeforeUpdating[coordsListIndexForSplittingAlgorithm]);
 		}
 	}
 
@@ -280,13 +277,12 @@ class VoxelWalkabilityData {
 		//	-> ...
 		//	-> Increase clusterIndex 
 
-		let clusterIndex = this._getIndexForNewCluster();
-		console.log("Index: " + clusterIndex);
 		for(let x = 0; x < WORLD_SIZE.x; x++) {
 			for(let z = 0; z < WORLD_SIZE.z; z++) {
 				for(let y = 0; y < WORLD_SIZE.y; y++) {
 					let index = this._getIndexFromCoords([x,y,z]);
 					if(this._voxelWalkablilities[index] === this.VOXEL_INITIAL_WALKABLE) {
+						let clusterIndex = this._getIndexForNewCluster();
 						this._voxelWalkablilities[index] = clusterIndex;
 
 						// Find all walkable reachable neighbors and set their walkability to clusterIndex
@@ -319,12 +315,10 @@ class VoxelWalkabilityData {
 							numberOfVoxelsInCluster += indicesCount;
 						}
 						this._addCluster(clusterIndex, numberOfVoxelsInCluster);
-						clusterIndex = this._getIndexForNewCluster();
 					}
 				}
 			}
 		}
-		console.log("numberOfClusters: " + clusterIndex);
 	}
 
 	// Functions for managing the walkability-clusters:
@@ -361,14 +355,35 @@ class VoxelWalkabilityData {
 		let clusterIndicesThatNeedToBeMerged = [];
 
 		// Identify clusters that should be merged and the cluster into which they should get merged:
-		for(let i = 1; i < startCoordsForMerging.length; i++) {
+		iLoop: for(let i = 1; i < startCoordsForMerging.length; i++) {
 			let tempClusterIndex = this.getVoxelWalkability(startCoordsForMerging[i]);
+			if( tempClusterIndex === biggestClusterIndex) {
+				continue iLoop;
+			}
+
 			if( this._clusterSizes[biggestClusterIndex] <
 				this._clusterSizes[tempClusterIndex]) {
-				clusterIndicesThatNeedToBeMerged.push(biggestClusterIndex);
+				let indexAlreadyInArray = false;
+				for(let j = 0; j < clusterIndicesThatNeedToBeMerged.length; j++) {
+					if(clusterIndicesThatNeedToBeMerged[j] === biggestClusterIndex) {
+						indexAlreadyInArray = true;
+					}
+				}
+				if(indexAlreadyInArray === false) {
+					clusterIndicesThatNeedToBeMerged.push(biggestClusterIndex);
+				}
+
 				biggestClusterIndex = tempClusterIndex;
 			} else {
-				clusterIndicesThatNeedToBeMerged.push(tempClusterIndex);
+				let indexAlreadyInArray = false;
+				for(let j = 0; j < clusterIndicesThatNeedToBeMerged.length; j++) {
+					if(clusterIndicesThatNeedToBeMerged[j] === tempClusterIndex) {
+						indexAlreadyInArray = true;
+					}
+				}
+				if(indexAlreadyInArray === false) {
+					clusterIndicesThatNeedToBeMerged.push(tempClusterIndex);
+				}
 			}
 		}
 
@@ -395,7 +410,9 @@ class VoxelWalkabilityData {
 				}
 			}
 			coordsForMerging.splice(0, coordsForMergingLength);
-			coordsForMergingLength = coordsForMerging.length;		
+			coordsForMergingLength = coordsForMerging.length;
+
+			console.log("beim mergen!" + coordsForMergingLength);	
 		}
 
 		// Remove merged clusters:
@@ -404,8 +421,139 @@ class VoxelWalkabilityData {
 		}
 	}
 
-	_splitCluster() {
-		console.log("Split Cluster!");
+	_splitCluster(startCoordsForSplitting) {
+		// Algorithm:
+		// - find walkable-reachable neighbors of every startCoord
+		// - set every walkable-reachable neighbor to new clusterIndex and save into list
+		//		-> if walkable-reachable neighbor has already a new clusterIndex:
+		//			* set all coords of the cluster, that tries to expand with this clusterIndex
+		//			* remove the cluster, that tries to expand
+		//			* remove the cluster from the startCoords
+		//				+ if only one cluster:
+		//					-> set all coords in list back to old value
+		//					-> remove new cluster
+		//				+ if multiple clusters:
+		//					-> go one until no neighbors can be found (splitted cluster is complete)
+
+		// Initialize variables for algorithm:
+		let reachableWalkableNeighbors = [];
+		let indicesOfVoxelsWithChangedWalkability = [];
+		let newClusterIndices = [];
+		let oldClusterIndices = [];
+		for(let i = 0; i < startCoordsForSplitting.length; i++) {
+			reachableWalkableNeighbors.push([startCoordsForSplitting[i]]);
+			newClusterIndices.push(this._getIndexForNewCluster());
+			oldClusterIndices.push(this.getVoxelWalkability(startCoordsForSplitting[i]));
+
+			this.setVoxelWalkability(startCoordsForSplitting[i], newClusterIndices[i]);
+			indicesOfVoxelsWithChangedWalkability.push([this._getIndexFromCoords(startCoordsForSplitting[i])]);
+			this._clusterSizes[oldClusterIndices[i]] -= 1;
+			this._addCluster(newClusterIndices[i], 1);
+		}
+
+		let iConnectionsFound = 0;
+		let iClusterSplits = 0;
+
+		while(iConnectionsFound + 1 + iClusterSplits < startCoordsForSplitting.length) {
+			let indicesMapForRemoving = [];
+
+			iLoop: for(let i = 0; i < reachableWalkableNeighbors.length; i++) {
+
+				let initialLength = reachableWalkableNeighbors[i].length;
+				if(initialLength === 0) {
+					indicesMapForRemoving.push({index: i, split: true});					
+				}
+
+				for(let l = 0; l < initialLength; l++) {
+
+					let tempReachableWalkableNeighbors = this.getReachableWalkableNeighborCoordsWithClusterIndices(reachableWalkableNeighbors[i][l]);
+					if(tempReachableWalkableNeighbors.length === 0) {
+						// Cluster i is successfully splitted:
+						indicesMapForRemoving.push({index: i, split: true});
+						continue iLoop;
+					}
+
+					for(let j = 0; j < tempReachableWalkableNeighbors.length; j++) {
+						let voxelIndex = this._getIndexFromCoords(tempReachableWalkableNeighbors[j]);
+						let indexOfConnectedCluster = undefined;
+						kLoop: for(let k = 0; k < newClusterIndices.length; k++) {
+							if(k !== i && this._voxelWalkablilities[voxelIndex] === newClusterIndices[k]) {
+								// cluster k and i are connected!
+								indexOfConnectedCluster = k;
+								break kLoop;
+							}
+						}
+
+						if(indexOfConnectedCluster !== undefined) {
+							// Set walkability of all voxels of cluster with newClusterIndices[i] to connected cluster walkability
+							for(let k = 0; k < indicesOfVoxelsWithChangedWalkability[i].length; k++) {
+								this._voxelWalkablilities[indicesOfVoxelsWithChangedWalkability[i][k]] = newClusterIndices[indexOfConnectedCluster];
+								this._clusterSizes[newClusterIndices[indexOfConnectedCluster]] += 1;
+								indicesOfVoxelsWithChangedWalkability[indexOfConnectedCluster].push(indicesOfVoxelsWithChangedWalkability[i][k]);
+							}
+
+							// Put all reachableWalkableNeighbors into connected cluster
+							for(let k = 0; k < reachableWalkableNeighbors[i].length; k++) {
+								reachableWalkableNeighbors[indexOfConnectedCluster].push(reachableWalkableNeighbors[i][k]);
+							}
+
+							// Save i for removing it (with newClusterIndices[i])
+							indicesMapForRemoving.push({index: i, split: false});
+
+
+							continue iLoop;					
+						} else {
+							// Check if walkability is not already set to the new clusterIndex, this can occur is clusters 
+							// get connected. If not, set walkability to new clusterIndex.
+							if(this._voxelWalkablilities[voxelIndex] !== newClusterIndices[i]) {
+								this._voxelWalkablilities[voxelIndex] = newClusterIndices[i];
+								this._clusterSizes[oldClusterIndices[i]] -= 1;
+								this._clusterSizes[newClusterIndices[i]] += 1;
+
+								indicesOfVoxelsWithChangedWalkability[i].push(voxelIndex);
+								reachableWalkableNeighbors[i].push(tempReachableWalkableNeighbors[j]);
+							}			
+						}
+					}
+				}
+
+				reachableWalkableNeighbors[i].splice(0, initialLength);
+			}
+
+
+			// Remove clusters:
+			indicesMapForRemoving.sort(this._sortIndicesMapForRemovingFromHighToLow);
+			for(let i = 0; i < indicesMapForRemoving.length; i++) {
+				let index = indicesMapForRemoving[i].index;
+
+				if(indicesMapForRemoving[i].split === true) {
+					iClusterSplits += 1;
+					this._addCluster(newClusterIndices[index], indicesOfVoxelsWithChangedWalkability[index].length);				
+				} else {
+					this._removeCluster(newClusterIndices[index]);
+					iConnectionsFound += 1;
+				}
+
+				reachableWalkableNeighbors.splice(index, 1);
+				indicesOfVoxelsWithChangedWalkability.splice(index, 1);
+				newClusterIndices.splice(index, 1);
+				oldClusterIndices.splice(index, 1);
+			}
+
+			if(iConnectionsFound + 1 + iClusterSplits >= startCoordsForSplitting.length) {
+				if(reachableWalkableNeighbors.length === 1) {
+					for(let i = 0; i < indicesOfVoxelsWithChangedWalkability[0].length; i++) {
+						this._voxelWalkablilities[indicesOfVoxelsWithChangedWalkability[0][i]] = oldClusterIndices[0];
+						this._clusterSizes[oldClusterIndices[0]] += 1;
+					}
+					this._removeCluster(newClusterIndices[0]);
+				}
+			}
+		}
+	}
+
+	_sortIndicesMapForRemovingFromHighToLow(a, b) {
+    	return b.index - a.index;
 	}
 
 	// Functions for visualization:
@@ -419,7 +567,7 @@ class VoxelWalkabilityData {
 					if(this.getVoxelWalkability([x,y,z]) !== this.VOXEL_NOT_WALKABLE) {
 						let point = new THREE.Vector3();
 						point.x = x;
-						point.y = y + 0.5;
+						point.y = y + 0.75;
 						point.z = z;
 
 						walkabilityGeometry.vertices.push( point );

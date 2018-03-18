@@ -9,8 +9,8 @@ class Pathfinder {
 	getPath(startCoords, endCoords) {
 		if( this._voxelWalkablilityData.getVoxelWalkability(startCoords) !== 
 			this._voxelWalkablilityData.getVoxelWalkability(endCoords)) {
-			console.log(this._voxelWalkablilityData.getVoxelWalkability(startCoords) + " " + 
-						this._voxelWalkablilityData.getVoxelWalkability(endCoords));
+			//console.log(this._voxelWalkablilityData.getVoxelWalkability(startCoords) + " " + 
+			//			this._voxelWalkablilityData.getVoxelWalkability(endCoords));
 			return undefined;
 		}
 
